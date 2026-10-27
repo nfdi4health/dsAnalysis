@@ -168,7 +168,7 @@ initProject <- function(path = "home",
 
   renv::install(c("dsBaseClient",
                   "nfdi4health/dsSupportClient",
-                  "FlorianSchw/dsAnalysis"),
+                  "nfdi4health/dsAnalysis"),
                 library = project_library,
                 project = new_project_path,
                 prompt = FALSE)

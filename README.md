@@ -12,7 +12,7 @@ analysis plan you write.
 
    ``` r
    # install.packages("remotes")
-   remotes::install_github("FlorianSchw/dsAnalysis")
+   remotes::install_github("nfdi4health/dsAnalysis")
    ```
 
 2. **Create a project:**
@@ -38,7 +38,7 @@ analysis plan you write.
    [Setup](#setup).
 
 If you'd rather not set this up yourself, or get stuck,
-[open an issue](https://github.com/FlorianSchw/dsAnalysis/issues).
+[open an issue](https://github.com/nfdi4health/dsAnalysis/issues).
 
 ## What a project contains
 
@@ -160,14 +160,14 @@ Restart R after changing it.
 Describe your analysis in `config/analysis-plan.yml`: the studies, the
 variables and the steps. Each push that changes the plan runs the
 `datashield-analysis-suggest` workflow from
-[package-workflows](https://github.com/FlorianSchw/package-workflows).
+[package-workflows](https://github.com/nfdi4health/datashield-workflows).
 It drafts a script per step, tests all of them on mock data built from
 your variables, and proposes them as a pull request. The scripts are a
 starting point: read and adapt them. The analysis stays your
 responsibility.
 
 Details:
-[DataSHIELD analysis scripts](https://github.com/FlorianSchw/package-workflows/blob/main/docs/datashield-analysis-suggest.qmd).
+[DataSHIELD analysis scripts](https://github.com/nfdi4health/datashield-workflows/blob/main/docs/datashield-analysis-suggest.qmd).
 
 ### Data protection
 
@@ -190,9 +190,9 @@ Once per project repository on GitHub:
 1. **Claude access.** In the Anthropic Console, a service account for
    the repository and a federation rule for the workflow (claim
    `job_workflow_ref`, naming
-   `FlorianSchw/package-workflows/.github/workflows/datashield-analysis-suggest.yml@refs/heads/main`).
+   `nfdi4health/datashield-workflows/.github/workflows/datashield-analysis-suggest.yml@refs/heads/main`).
    See
-   [Claude setup](https://github.com/FlorianSchw/package-workflows/blob/main/docs/claude-setup.qmd).
+   [Claude setup](https://github.com/nfdi4health/datashield-workflows/blob/main/docs/claude-setup.qmd).
 2. **Repository secrets** (Settings → Secrets and variables → Actions):
 
    | Secret | Value |
@@ -208,7 +208,7 @@ Once per project repository on GitHub:
    other checks.
 
 No Anthropic account, or not sure about any of this?
-[Open an issue](https://github.com/FlorianSchw/dsAnalysis/issues) and
+[Open an issue](https://github.com/nfdi4health/dsAnalysis/issues) and
 we'll set it up with you.
 
 ### Trying the scripts
@@ -227,4 +227,4 @@ Set it back to `'production'` to run the analysis on the live servers.
 ## Help
 
 Questions, problems, or want help with the setup?
-[Open an issue](https://github.com/FlorianSchw/dsAnalysis/issues).
+[Open an issue](https://github.com/nfdi4health/dsAnalysis/issues).

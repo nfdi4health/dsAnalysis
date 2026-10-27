@@ -318,7 +318,7 @@ test_that("initProject() passes the new project path to renv::init(), renv::inst
   testthat::expect_equal(rec$hydrate, p)
   testthat::expect_equal(rec$snapshot, p)
   testthat::expect_equal(rec$install_pkgs,
-                         c("dsBaseClient", "nfdi4health/dsSupportClient", "FlorianSchw/dsAnalysis"))
+                         c("dsBaseClient", "nfdi4health/dsSupportClient", "nfdi4health/dsAnalysis"))
 })
 
 test_that("initProject() errors on a non-logical switch_to_proj before creating the project directory", {

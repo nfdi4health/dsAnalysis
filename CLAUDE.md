@@ -242,8 +242,16 @@ Facts behind these items:
     - A step-by-step setup (install, `initProject()`, `.Renviron`,
       GitHub repo, secrets, "Allow GitHub Actions to create and approve
       pull requests"), and for help: open an issue on
-      https://github.com/FlorianSchw/dsAnalysis/issues.
-27. **Move the repository to `nfdi4health`** (planned, not before
+      https://github.com/nfdi4health/dsAnalysis/issues.
+27. **Moved to `nfdi4health` on 2026-10-26/27** (by the user). Done on
+    branch `ci/nfdi4health-move`: `DESCRIPTION`, both READMEs,
+    `R/initProject.R` and its test, the workflow callers and the
+    `datashield-analysis-suggest.yml` template (now
+    `nfdi4health/datashield-workflows`); repo-governance targets. Still
+    to check by hand: App installation, repository secrets, the two
+    federation rules' `repository_owner_id` (now 60613705), the catalogue
+    entry. The original list:
+    (planned, not before
     2026-10-02). The GitHub App was installed on `FlorianSchw/dsAnalysis`
     on 2026-10-02 (the token step had failed with 404: no installation
     for this repo). After the move, update:
