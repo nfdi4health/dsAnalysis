@@ -2,7 +2,6 @@ name: DataSHIELD Analysis Suggestions
 
 on:
   push:
-    # Must match the plan-file input (default config/analysis-plan.yml).
     paths: ['config/analysis-plan.yml']
   workflow_dispatch:
 
@@ -12,13 +11,8 @@ jobs:
       id-token: write
       contents: write
       pull-requests: write
-    uses: FlorianSchw/package-workflows/.github/workflows/datashield-analysis-suggest.yml@main
-    # with:
-    #   plan-file: config/analysis-plan.yml
+    uses: nfdi4health/datashield-workflows/.github/workflows/datashield-analysis-suggest.yml@main
     secrets:
       anthropic-organization-id: ${{ secrets.ANTHROPIC_ORG_ID }}
       anthropic-service-account-id: ${{ secrets.ANTHROPIC_SVAC_ID }}
       anthropic-federation-rule-id: ${{ secrets.ANTHROPIC_FDRL_ANALYSIS }}
-      # Optional: a GitHub App token lets the bot's PRs trigger your checks.
-      app-client-id: ${{ secrets.APP_CLIENT_ID }}
-      app-private-key: ${{ secrets.APP_PRIVATE_KEY }}
