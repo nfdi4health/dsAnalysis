@@ -15,7 +15,6 @@ jobs:
       issues: write
     uses: nfdi4health/datashield-workflows/.github/workflows/roxygen-suggest.yml@main
     with:
-      datashield: true
       datashield-type: utility
     secrets:
       anthropic-organization-id: ${{ secrets.ANTHROPIC_ORG_ID }}

@@ -15,9 +15,7 @@ jobs:
       issues: write
     uses: nfdi4health/datashield-workflows/.github/workflows/test-suggest.yml@main
     with:
-      datashield: true
       datashield-type: utility
-      dslite-setup: auto   # tests/testthat/setup.R doesn't connect, so the bot adds setup-dslite.R
     secrets:
       anthropic-organization-id: ${{ secrets.ANTHROPIC_ORG_ID }}
       anthropic-service-account-id: ${{ secrets.ANTHROPIC_SVAC_ID }}
