@@ -9,16 +9,16 @@ internal_find_script(script_name, package = "dsAnalysis")
 \arguments{
 \item{script_name}{specifies which script is called.}
 
-\item{package}{is the name of the package where the files are included ("dsAnalysis").}
+\item{package}{Character string giving the name of the locally installed R package that contains the template files; defaults to "dsAnalysis".}
 }
 \value{
-the path of the script_name
+A single character string giving the local file system path to the requested template script inside the installed package; no files are created or modified. If the path cannot be resolved, the function throws an error instead of returning a value.
 }
 \description{
 This is an internal function which will find the correct path for files.
 }
 \details{
-This function adapts the code from the internal function find_template from the `usethis::use_template` function.
+This function looks up the installed location of a template file within a package's "templates" directory on the analyst's local machine, using fs::path_package(). It does not write, copy, or modify any files; it only returns a path. If the path cannot be resolved (e.g. the package or template file is missing), it stops with an informative error instead of returning an empty string.
 }
 \author{
 Florian Schwarz for the German Institute of Human Nutrition

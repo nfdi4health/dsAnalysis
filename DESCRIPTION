@@ -1,6 +1,6 @@
 Package: dsAnalysis
 Title: Creates DataSHIELD analysis project environments
-Version: 0.0.0.9005
+Version: 0.0.0.9010
 Authors@R: 
     person("Florian", "Schwarz", , "Florian.Schwarz@dife.de", role = c("aut", "cre"))
 Description: Creates DataSHIELD analysis project environments via pre-defined scripts. 
@@ -39,3 +39,4 @@ Suggests:
     withr
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.1.0
+RoxygenNote: 7.3.3

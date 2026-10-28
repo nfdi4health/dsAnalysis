@@ -9,8 +9,41 @@ sync_dsPackages(conns = NULL, install = TRUE)
 \arguments{
 \item{conns}{DataSHIELD connections; found in the session if not given}
 
-\item{install}{FALSE only reports what would be installed}
+\item{install}{Logical, default TRUE; if TRUE missing or outdated packages are installed locally, if FALSE only a report of what would be installed is printed and returned, with nothing installed.}
+}
+\value{
+Returns (invisibly) a data frame with one row per server-side package, giving the servers it is on, the versions found, the version chosen for local installation, and the locally installed version (NA if absent); when install = FALSE it is also printed to the console as a report, and no packages are installed.
 }
 \description{
-Matches the local packages and DSLite setup to the DataSHIELD servers
+Compares package versions installed locally with those available on the connected DataSHIELD servers, and installs any that are missing or outdated.
+}
+\details{
+Side effects on the analyst's machine: calls install_dsPackage() to install or update packages in the local R library when install = TRUE, and if utils/setup/01_DSLite_Setup.R exists, may append newly-available packages to it via add_dsPackage(). Uses DSI::datashield.profiles() to report which DataSHIELD profiles the servers use, DSI::datashield.pkg_status() to learn which packages and versions each server offers, and utils::packageVersion() to check what is installed locally. When a package has different versions across servers, the lowest common version is chosen for local installation so the client works with all connected servers; informative messages are printed about such mismatches and about packages available on only some servers.
+}
+\examples{
+\dontrun{
+require('DSI')
+require('DSOpal')
+require('dsAnalysis')
+
+builder <- DSI::newDSLoginBuilder()
+builder$append(server = "study1",
+               url = "https://opal-demo.obiba.org/",
+               user = "dsuser", password = "P@ssw0rd",
+               table = "CNSIM.CNSIM1", driver = "OpalDriver")
+builder$append(server = "study2",
+               url = "https://opal-demo.obiba.org/",
+               user = "dsuser", password = "P@ssw0rd",
+               table = "CNSIM.CNSIM2", driver = "OpalDriver")
+builder$append(server = "study3",
+               url = "https://opal-demo.obiba.org/",
+               user = "dsuser", password = "P@ssw0rd",
+               table = "CNSIM.CNSIM3", driver = "OpalDriver")
+logindata <- builder$build()
+connections <- DSI::datashield.login(logins = logindata, assign = TRUE, symbol = "D")
+
+sync_dsPackages(conns = connections, install = FALSE)
+
+datashield.logout(connections)
+}
 }

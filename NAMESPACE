@@ -22,8 +22,6 @@ import(tidyr)
 import(usethis)
 importFrom(DSI,datashield.connections_find)
 importFrom(methods,is)
-importFrom(purrr,
-  map,
-  map2
-)
+importFrom(purrr,map)
+importFrom(purrr,map2)
 importFrom(utils,download.file)

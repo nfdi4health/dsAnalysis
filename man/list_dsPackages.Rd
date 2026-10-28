@@ -7,12 +7,25 @@
 list_dsPackages(search = NULL, status = NULL, refresh = FALSE)
 }
 \arguments{
-\item{search}{text to look for in the package names and descriptions}
+\item{search}{Optional character string to search for (case-insensitive, fixed match) in the package name, client name and description; if NULL (the default), no text filtering is applied.}
 
-\item{status}{statuses to keep, e.g. "production" or c("production", "development")}
+\item{status}{Optional character vector of statuses to keep, e.g. "production" or c("production", "development"); matching is case-insensitive and packages with no recorded status are labelled "unknown"; if NULL (the default), all statuses are kept.}
 
-\item{refresh}{read the catalogue again instead of using the copy from this session}
+\item{refresh}{Logical, defaults to FALSE; if TRUE, re-downloads the package catalogue via ds_catalogue() instead of reusing the copy cached earlier in the session.}
+}
+\value{
+A tibble, sorted by package name, with one row per package and columns package, client, status, github_version, source and description; if the catalogue cannot be obtained, an empty tibble is returned invisibly. No disclosure control is relevant since this only reflects publicly available catalogue metadata, and no files are written.
 }
 \description{
-Lists the DataSHIELD packages in the DataSHIELD package catalogue
+Returns a tibble of DataSHIELD packages from the package catalogue, optionally filtered by search text and status.
+}
+\details{
+Calls internal_ds_catalogue() to obtain the catalogue, caching it for the session unless refresh = TRUE forces a reload. Packages that are clients of another package in the catalogue (see internal_catalogue_client()) are merged into that package's row rather than listed separately. Prints a message to the console reporting how many packages were found, with a hint to use install_dsPackage() for the first match, or that none were found.
+}
+\examples{
+\dontrun{
+list_dsPackages()
+
+list_dsPackages(search = "diabetes", status = "production")
+}
 }

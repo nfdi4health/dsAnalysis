@@ -13,11 +13,11 @@
 #' @examples
 #' \dontrun{
 #' tmp_dir <- tempdir()
-#' 
+#'
 #' project_path <- initProject(path = tmp_dir,
 #'                              name = "demo_ds_project",
 #'                              switch_to_proj = FALSE)
-#' 
+#'
 #' list.files(project_path)
 #' }
 #' @export
@@ -168,15 +168,49 @@ initProject <- function(path = "home",
 
   renv::install(c("dsBaseClient",
                   "nfdi4health/dsSupportClient",
-                  "FlorianSchw/dsAnalysis"),
+                  "FlorianSchw/dsAnalysis@ci/setup",
+                  "config",
+                  "DSLite",
+                  "grateful"),
                 library = project_library,
                 project = new_project_path,
                 prompt = FALSE)
 
+  used <- unique(renv::dependencies(new_project_path, quiet = TRUE)$Package)
+
+  base_pkgs      <- rownames(installed.packages(priority = "base"))
+  already_there  <- rownames(installed.packages(lib.loc = project_library))
+  used           <- setdiff(used, c(base_pkgs, already_there))
+
+  if (length(used) > 0) {
+    renv::install(used,
+                  library = project_library,
+                  project = new_project_path,
+                  prompt = FALSE)
+  }
+
   #### everything else the project's scripts use (DSLite, here, config, grateful, ...)
   renv::hydrate(library = project_library,
                 project = new_project_path,
+                packages = c("dsBaseClient", "dsSupportClient", "dsAnalysis"),
                 prompt = FALSE)
+
+  ip <- installed.packages(lib.loc = project_library)
+
+  deps <- unique(unlist(
+    tools::package_dependencies(rownames(ip), db = ip,
+                                which = c("Depends", "Imports", "LinkingTo"))
+  ))
+
+  known   <- c(rownames(ip), rownames(installed.packages(priority = "base")), "R")
+  missing <- setdiff(deps, known)
+
+  if (length(missing) > 0) {
+    renv::install(missing,
+                  library = project_library,
+                  project = new_project_path,
+                  prompt = FALSE)
+  }
 
   renv::snapshot(project = new_project_path,
                  library = project_library,

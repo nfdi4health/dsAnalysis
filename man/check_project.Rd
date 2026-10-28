@@ -7,8 +7,19 @@
 check_project(fix = NULL)
 }
 \arguments{
-\item{fix}{"restore", "snapshot", or NULL to ask}
+\item{fix}{Character string, one of "restore" or "snapshot", or NULL (the default); if NULL and the session is interactive, the user is asked to choose via a menu, while in a non-interactive session with fix left NULL no restore or snapshot action is taken and any other value is silently ignored.}
+}
+\value{
+Invisibly returns the comparison list produced by the internal helper (with elements such as synchronized, used_not_installed, recorded_not_installed, used_not_recorded, other_version, and unexplained), or invisible NULL if the project has no renv.lock file; the function is called mainly for its console messages and the side effects of fix (changes to the installed packages or to renv.lock on disk) rather than for its return value.
 }
 \description{
-Checks that the installed packages match the project's renv.lock
+Compares the packages installed in the current project library with those recorded in renv.lock and reports any differences. Optionally restores or snapshots the project to resolve the differences.
+}
+\details{
+Uses here::here() to locate the project and an internal helper (built on renv::status()) to classify differences such as missing, unrecorded, or mismatched-version packages. If fix is NULL and the session is interactive, utils::menu() asks whether to run renv::restore() or renv::snapshot(); either call can change the packages installed in the project library or the contents of renv.lock on disk. If the project has no renv.lock file, the function only messages and returns invisible NULL without checking anything.
+}
+\examples{
+\dontrun{
+proj <- tempfile(\"demo_project\")\ndir.create(proj)\nold <- setwd(proj)\n\n# check_project() looks up the project with here::here(); without an\n# renv.lock file it simply reports that there is nothing to check\ncheck_project(fix = \"none\")\n\nsetwd(old)\nunlink(proj, recursive = TRUE)
+}
 }

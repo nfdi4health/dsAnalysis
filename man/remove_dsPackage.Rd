@@ -7,12 +7,32 @@
 remove_dsPackage(dsPackage = NULL, client = NULL, uninstall = FALSE)
 }
 \arguments{
-\item{dsPackage}{name or names of the DataSHIELD server-side packages to remove}
+\item{dsPackage}{Character vector of DataSHIELD server-side package name(s) to remove from the DSLite setup; required (the function stops if NULL), and must not include "dsBase".}
 
-\item{client}{name or names of the matching client-side packages}
+\item{client}{Character vector of matching client-side package name(s), one per element of dsPackage; if NULL (the default), the client name is taken from dependencies.R if recorded there, otherwise guessed as '<dsPackage>Client'.}
 
-\item{uninstall}{also uninstall the packages from the project library}
+\item{uninstall}{Logical, defaults to FALSE; if TRUE, also uninstalls the server and client packages from the project's renv library via renv::remove().}
+}
+\value{
+Returns the dsPackage argument invisibly (a character vector); its main effect is updating utils/setup/01_DSLite_Setup.R and dependencies.R in the project, and optionally uninstalling packages from the project library via renv.
 }
 \description{
-Removes DataSHIELD packages from the DSLite setup and dependencies.R
+Removes a DataSHIELD server-side package (and its matching client package) from the project's DSLite setup script and dependency records, optionally uninstalling them from the project library.
+}
+\details{
+Edits utils/setup/01_DSLite_Setup.R on the analyst's machine to drop the package(s) from the DSLite-included packages list and remove matching library() calls, using internal helpers for parsing/writing included packages and library calls. Updates the project's dependencies.R record and refreshes the renv lockfile record via an internal renv-record helper. If uninstall = TRUE, also calls renv::remove() to uninstall the packages from the project library; dsBase can never be removed since every DSLite setup requires it.
+}
+\examples{
+\dontrun{
+project_dir <- tempdir()
+dir.create(file.path(project_dir, "utils/setup"), recursive = TRUE, showWarnings = FALSE)
+writeLines(c("included_packages <- c('dsMediationClient')", "library(dsMediationClient)"),
+           file.path(project_dir, "utils/setup/01_DSLite_Setup.R"))
+old_wd <- getwd()
+setwd(project_dir)
+
+remove_dsPackage(dsPackage = "dsMediation", client = "dsMediationClient", uninstall = FALSE)
+
+setwd(old_wd)
+}
 }

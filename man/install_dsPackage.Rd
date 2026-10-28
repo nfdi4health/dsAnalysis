@@ -15,20 +15,36 @@ install_dsPackage(
 )
 }
 \arguments{
-\item{dsPackage}{name or names of the DataSHIELD server-side packages}
+\item{dsPackage}{Character vector giving the name(s) of the DataSHIELD server-side package(s) to install; if more than one name is given, version/ref/source/client arguments must be left NULL.}
 
-\item{version}{version of the server package}
+\item{version}{Single character string giving the CRAN/release version of the server package to install; only usable when dsPackage has length one.}
 
-\item{ref}{GitHub branch, tag or commit of the server package}
+\item{ref}{Single character string naming a GitHub branch, tag or commit of the server package to install; only usable when dsPackage has length one.}
 
-\item{source}{GitHub repository of the server package ("owner/repo")}
+\item{source}{Single character string giving the GitHub repository of the server package in "owner/repo" form; only usable when dsPackage has length one.}
 
-\item{client}{name of the client package}
+\item{client}{Single character string giving the name of the client-side R package to install alongside the server package; only usable when dsPackage has length one.}
 
-\item{client_version}{version of the client package}
+\item{client_version}{Single character string giving the version of the client package to install; only usable when dsPackage has length one.}
 
-\item{client_source}{GitHub repository of the client package ("owner/repo")}
+\item{client_source}{Single character string giving the GitHub repository of the client package in "owner/repo" form; only usable when dsPackage has length one.}
+}
+\value{
+Returns invisibly: the character vector of package names supplied, when multiple packages were installed in a loop, or the list of resolved package specifications (server and, if given, client) for a single-package call. As a side effect it installs packages into the current renv project's library (updating its lockfile), updates the local DSLite setup, and appends records to dependencies.R in the project.
 }
 \description{
-Installs DataSHIELD packages and adds them to the project
+Installs one or more DataSHIELD server-side packages, optionally with a matching client package, into the current renv project and registers them with the local DSLite setup.
+}
+\details{
+Resolves package specifications with the internal resolve_dsPackage() helper and installs them with renv::install() into the project found by here::here(), updating that project's renv library and lockfile. Also updates the local DSLite setup via add_dsPackage() and appends the new dependencies to dependencies.R via an internal renv_record() helper. When dsPackage has length greater than one, the function calls itself once per name with no version/ref/source/client options, since those only make sense for a single package.
+}
+\examples{
+\dontrun{
+proj <- tempdir()
+old_wd <- setwd(proj)
+on.exit(setwd(old_wd), add = TRUE)
+
+## Not run because it installs packages and requires network access
+## install_dsPackage("dsBase")
+}
 }
