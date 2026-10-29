@@ -1,19 +1,17 @@
 name: R-CMD-check
 
 on:
-  push:
-    branches: [main]
   pull_request:
-    branches: [main]
+    branches: [dev]
   schedule:
-    - cron: '15 7 * * *'
+    - cron: '15 7 * * 1'
   workflow_dispatch:
 
 jobs:
   check:
-    uses: FlorianSchw/package-workflows/.github/workflows/r-cmd-check.yml@main
+    uses: nfdi4health/datashield-workflows/.github/workflows/r-cmd-check.yml@main
     with:
-      r-version-list: '["release", "4.4.3"]'
+      r-version-list: '["release"]'
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -21,4 +19,4 @@ jobs:
     if: github.event_name == 'schedule'
     permissions:
       actions: write
-    uses: FlorianSchw/package-workflows/.github/workflows/workflow-keepalive.yml@main
+    uses: nfdi4health/datashield-workflows/.github/workflows/workflow-keepalive.yml@main

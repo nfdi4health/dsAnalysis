@@ -4,3 +4,8 @@
 .httr-oauth
 .DS_Store
 .quarto
+
+# npm files: the shared release workflow installs semantic-release itself
+package.json
+package-lock.json
+node_modules/

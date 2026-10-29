@@ -4,6 +4,10 @@ library(DSI)
 library(DSOpal)
 library(dsBaseClient)
 
+#### credentials come from .Renviron: never write them into this file (it is committed)
+#### to log in with a DataSHIELD profile other than the server's default (it decides which
+#### server packages are available), add profile = "<name>" to each server's append() call below
+
 builder <- DSI::newDSLoginBuilder(.silent = FALSE)
 builder$append(server = "DEMO_OBIBA_1",
                url = Sys.getenv("OBIBA1_URL"),

@@ -1,0 +1,15 @@
+name: DESCRIPTION Author Suggestions
+
+on:
+  pull_request:
+    branches: [dev]
+
+jobs:
+  suggest-authors:
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: nfdi4health/datashield-workflows/.github/workflows/authors-suggest.yml@main
+    secrets:
+      app-client-id: ${{ secrets.APP_CLIENT_ID }}
+      app-private-key: ${{ secrets.APP_PRIVATE_KEY }}

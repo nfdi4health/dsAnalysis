@@ -6,6 +6,10 @@
 library(dsAnalysis)
 library(dsBase)
 
+#### DataSHIELD packages added with install_dsPackage() or add_dsPackage(): server and client per line
+#### DataSHIELD packages (managed by add_dsPackage and remove_dsPackage)
+#### DataSHIELD packages end
+
 #### packages needed by the scripts of the datashield-analysis-suggest workflow
 #### bot-suggest: packages (updated by datashield-analysis-suggest)
 #### bot-suggest: packages end
