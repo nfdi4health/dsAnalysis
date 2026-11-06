@@ -22,14 +22,13 @@
 #' @export
 #'
 
-initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
+initMockData <- function(folder_name = NULL, df = "D", datasources = NULL){
 
   if(is.null(folder_name)){
     folder_name <- "MockData_New"
   }
 
-  #new_mockdata_path <- here::here(paste0("utils/mock_data/", folder_name))
-  new_mockdata_path <- paste0("./utils/mock_data/", folder_name)
+  new_mockdata_path <- here::here("utils/mock_data", folder_name)
 
   if (fs::dir_exists(new_mockdata_path)) {
     stop(paste0("The folder name you have provided would overwrite an existing
@@ -46,8 +45,6 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
   if(!(is.list(datasources) && all(unlist(lapply(datasources, function(d) {methods::is(d,"DSConnection")}))))){
     stop("The 'datasources' were expected to be a list of DSConnection-class objects", call.=FALSE)
   }
-
-  dir.create(new_mockdata_path)
 
   ds_servers <- names(datasources)
 
@@ -73,12 +70,12 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
 
   #### cont vars
 
-  vars_cont_stats <- dsSupportClient::ds.summaryVars(df)
+  vars_cont_stats <- dsSupportClient::ds.summaryVars(df, datasources = datasources)
 
   all_datasources_length <- c()
   mock_data_cont <- list()
 
-  for (i in 1:length(vars_cont_stats)){
+  for (i in seq_along(vars_cont_stats)){
 
     datasource_length <- vars_cont_stats[[i]][2] |>
       pull()
@@ -119,9 +116,9 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
   count <- 0L
 
   #### "D" hardcoded replaced
-  for (k in 1:length(vars_cat)){
+  for (k in seq_along(vars_cat)){
 
-    var_cat_level <- ds.levels(paste0(df, "$",vars_cat[k]))
+    var_cat_level <- ds.levels(paste0(df, "$",vars_cat[k]), datasources = datasources)
     names_list <- names(var_cat_level)
     list2 <- cbind(var_cat_level, names_list)
 
@@ -132,8 +129,9 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
       list3 <- as_tibble(list2) |>
         unnest_wider(col = 1) |>
         unnest_longer(col = 1) |>
+        #### enough entries for the largest server; each server's are cut to its length below
         mutate(Entries = purrr::map(.x = Levels, .f = ~ rep(x = .x,
-                                                            times = ceiling(datasource_length/number_categories)))) |>
+                                                            times = ceiling(max(all_datasources_length)/number_categories)))) |>
         mutate(Variable = vars_cat[k])
 
     }
@@ -155,13 +153,15 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
   }
 
 
-  var_cat_long <- var_cat_compressed |>
-    select(-c(1,2)) |>
-    unnest_longer(col = Entries)
+  if(length(vars_cat) > 0){
+    var_cat_long <- var_cat_compressed |>
+      select(-c(1,2)) |>
+      unnest_longer(col = Entries)
+  }
 
 
-  for (p in 1:length(ds_servers)){
-    for (q in 1:length(vars_cat)){
+  for (p in seq_along(ds_servers)){
+    for (q in seq_along(vars_cat)){
 
 
       new_vector <- var_cat_long |>
@@ -182,7 +182,10 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
   }
 
 
-  for (w in 1:length(mock_data_cont)){
+  #### the folder is only created once the servers have answered
+  dir.create(new_mockdata_path, recursive = TRUE)
+
+  for (w in seq_along(mock_data_cont)){
 
     vars_missing_study <- vars_missing |>
       tibble::rownames_to_column() |>
@@ -213,12 +216,11 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
            value = df1)
 
     save(list = ds_servers[w],
-         file = here::here(paste0("utils/mock_data/", folder_name), paste0(ds_servers[w], ".rda")))
+         file = file.path(new_mockdata_path, paste0(ds_servers[w], ".rda")))
 
   }
 
-
-
+  invisible(new_mockdata_path)
 
 }
 
