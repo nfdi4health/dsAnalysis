@@ -3,9 +3,7 @@
 #' @details The function queries each server for variable missingness, class, and summary statistics (via dsSupportClient::ds.wrapper() calls to ds.numNA and ds.class, plus ds.summaryVars()) and for categorical variable levels (ds.levels()), then simulates continuous variables from rnorm() using the reported means and standard deviations and resamples categorical levels locally with sample(). No raw server-side data is transferred; only aggregate statistics are used to build the mock data, which is saved to disk with save().
 #' @param folder_name Optional string naming the subfolder under utils/mock_data to create for storing the mock data; defaults to "MockData_New" if NULL, and the function errors if the resulting folder already exists.
 #' @param df String giving the name of the data frame on the server-side to produce mock data from (not a local data.frame object); defaults to "D".
-#' @param datasources a list of \code{\link[DSI]{DSConnection-class}} objects obtained after login.
-#' If the \code{datasources} argument is not specified the default set of connections will be
-#' used: see \code{\link[DSI]{datashield.connections_default}}.
+#' @param datasources A list of DSI::DSConnection-class objects obtained after login; if NULL (the default), the connections found by DSI::datashield.connections_find() are used.
 #' @return Invisibly returns the path (a string) to the newly created folder containing one .rda file per data source; the mock data frames themselves are saved to disk as a side effect rather than returned in R.
 #' @author Florian Schwarz for the German Institute of Human Nutrition
 #' @import dsSupportClient
