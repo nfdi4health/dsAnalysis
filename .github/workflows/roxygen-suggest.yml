@@ -5,7 +5,12 @@ on:
     branches: [dev]
     paths: ['R/**']
   workflow_dispatch:
-
+    inputs:
+      scope:
+        description: 'changed: what changed since the last review; all: every R file (a full review)'
+        type: choice
+        options: [changed, all]
+        default: changed
 jobs:
   suggest-docs:
     permissions:
@@ -13,11 +18,12 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
-      actions: read
-      checks: read
+      actions: read    # earlier runs: what the last review covered
+      checks: read     # their annotations
     uses: nfdi4health/datashield-workflows/.github/workflows/roxygen-suggest.yml@main
     with:
-      datashield-type: utility
+      review-scope: ${{ inputs.scope || 'changed' }}
+      datashield-type: client
     secrets:
       anthropic-organization-id: ${{ secrets.ANTHROPIC_ORG_ID }}
       anthropic-service-account-id: ${{ secrets.ANTHROPIC_SVAC_ID }}
