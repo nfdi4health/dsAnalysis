@@ -48,8 +48,8 @@ initMockData <- function(folder_name = NULL, df = "D", datasources = NULL){
 
   ds_servers <- names(datasources)
 
-  vars_missing <- dsSupportClient::ds.wrapper(df, ds_function = ds.numNA, datasources = datasources)
-  vars_class <- dsSupportClient::ds.wrapper(df, ds_function = ds.class, datasources = datasources)
+  vars_missing <- dsSupportClient::ds.wrapper(df, ds_function = "ds.numNA", datasources = datasources)
+  vars_class <- dsSupportClient::ds.wrapper(df, ds_function = "ds.class", datasources = datasources)
 
   vars_columns <- vars_class |>
     tibble::rownames_to_column() |>
