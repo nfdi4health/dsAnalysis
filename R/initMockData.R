@@ -1,14 +1,11 @@
-#'
-#' @title Function to get mock data from connected data sources
-#' @description The function will create a new DataSHIELD analysis project environment
-#' @details This function adaptssome things.
-#' @return mock data in the utils/mock_data folder
+#' @title Generate and save synthetic mock data from server variables
+#' @description Builds simulated local datasets that mimic the statistical properties of a server-side data frame, then saves one .rda file per data source to a new local folder.
+#' @details The function queries each server for variable missingness, class, and summary statistics (via dsSupportClient::ds.wrapper() calls to ds.numNA and ds.class, plus ds.summaryVars()) and for categorical variable levels (ds.levels()), then simulates continuous variables from rnorm() using the reported means and standard deviations and resamples categorical levels locally with sample(). No raw server-side data is transferred; only aggregate statistics are used to build the mock data, which is saved to disk with save().
+#' @param folder_name Optional string naming the subfolder under utils/mock_data to create for storing the mock data; defaults to "MockData_New" if NULL, and the function errors if the resulting folder already exists.
+#' @param df String giving the name of the data frame on the server-side to produce mock data from (not a local data.frame object); defaults to "D".
+#' @param datasources A list of DSI::DSConnection-class objects obtained after login; if NULL (the default), the connections found by DSI::datashield.connections_find() are used.
+#' @return Invisibly returns the path (a string) to the newly created folder containing one .rda file per data source; the mock data frames themselves are saved to disk as a side effect rather than returned in R.
 #' @author Florian Schwarz for the German Institute of Human Nutrition
-#' @param folder_name folder where the mock data shall be stored
-#' @param df data.frame object on the server-side to produce mock data from
-#' @param datasources a list of \code{\link[DSI]{DSConnection-class}} objects obtained after login.
-#' If the \code{datasources} argument is not specified the default set of connections will be
-#' used: see \code{\link[DSI]{datashield.connections_default}}.
 #' @import dsSupportClient
 #' @import dsBaseClient
 #' @import dplyr
@@ -20,16 +17,14 @@
 #' @importFrom methods is
 #' @importFrom DSI datashield.connections_find
 #' @export
-#'
 
-initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
+initMockData <- function(folder_name = NULL, df = "D", datasources = NULL){
 
   if(is.null(folder_name)){
     folder_name <- "MockData_New"
   }
 
-  #new_mockdata_path <- here::here(paste0("utils/mock_data/", folder_name))
-  new_mockdata_path <- paste0("./utils/mock_data/", folder_name)
+  new_mockdata_path <- here::here("utils/mock_data", folder_name)
 
   if (fs::dir_exists(new_mockdata_path)) {
     stop(paste0("The folder name you have provided would overwrite an existing
@@ -47,12 +42,10 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
     stop("The 'datasources' were expected to be a list of DSConnection-class objects", call.=FALSE)
   }
 
-  dir.create(new_mockdata_path)
-
   ds_servers <- names(datasources)
 
-  vars_missing <- dsSupportClient::ds.wrapper(df, ds_function = ds.numNA, datasources = datasources)
-  vars_class <- dsSupportClient::ds.wrapper(df, ds_function = ds.class, datasources = datasources)
+  vars_missing <- dsSupportClient::ds.wrapper(df, ds_function = "ds.numNA", datasources = datasources)
+  vars_class <- dsSupportClient::ds.wrapper(df, ds_function = "ds.class", datasources = datasources)
 
   vars_columns <- vars_class |>
     tibble::rownames_to_column() |>
@@ -73,12 +66,12 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
 
   #### cont vars
 
-  vars_cont_stats <- dsSupportClient::ds.summaryVars(df)
+  vars_cont_stats <- dsSupportClient::ds.summaryVars(df, datasources = datasources)
 
   all_datasources_length <- c()
   mock_data_cont <- list()
 
-  for (i in 1:length(vars_cont_stats)){
+  for (i in seq_along(vars_cont_stats)){
 
     datasource_length <- vars_cont_stats[[i]][2] |>
       pull()
@@ -119,9 +112,9 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
   count <- 0L
 
   #### "D" hardcoded replaced
-  for (k in 1:length(vars_cat)){
+  for (k in seq_along(vars_cat)){
 
-    var_cat_level <- ds.levels(paste0(df, "$",vars_cat[k]))
+    var_cat_level <- ds.levels(paste0(df, "$",vars_cat[k]), datasources = datasources)
     names_list <- names(var_cat_level)
     list2 <- cbind(var_cat_level, names_list)
 
@@ -132,8 +125,9 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
       list3 <- as_tibble(list2) |>
         unnest_wider(col = 1) |>
         unnest_longer(col = 1) |>
+        #### enough entries for the largest server; each server's are cut to its length below
         mutate(Entries = purrr::map(.x = Levels, .f = ~ rep(x = .x,
-                                                            times = ceiling(datasource_length/number_categories)))) |>
+                                                            times = ceiling(max(all_datasources_length)/number_categories)))) |>
         mutate(Variable = vars_cat[k])
 
     }
@@ -155,13 +149,15 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
   }
 
 
-  var_cat_long <- var_cat_compressed |>
-    select(-c(1,2)) |>
-    unnest_longer(col = Entries)
+  if(length(vars_cat) > 0){
+    var_cat_long <- var_cat_compressed |>
+      select(-c(1,2)) |>
+      unnest_longer(col = Entries)
+  }
 
 
-  for (p in 1:length(ds_servers)){
-    for (q in 1:length(vars_cat)){
+  for (p in seq_along(ds_servers)){
+    for (q in seq_along(vars_cat)){
 
 
       new_vector <- var_cat_long |>
@@ -182,7 +178,10 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
   }
 
 
-  for (w in 1:length(mock_data_cont)){
+  #### the folder is only created once the servers have answered
+  dir.create(new_mockdata_path, recursive = TRUE)
+
+  for (w in seq_along(mock_data_cont)){
 
     vars_missing_study <- vars_missing |>
       tibble::rownames_to_column() |>
@@ -213,12 +212,11 @@ initMockdata <- function(folder_name = NULL, df = "D", datasources = NULL){
            value = df1)
 
     save(list = ds_servers[w],
-         file = here::here(paste0("utils/mock_data/", folder_name), paste0(ds_servers[w], ".rda")))
+         file = file.path(new_mockdata_path, paste0(ds_servers[w], ".rda")))
 
   }
 
-
-
+  invisible(new_mockdata_path)
 
 }
 
