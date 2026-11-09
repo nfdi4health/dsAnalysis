@@ -3,7 +3,7 @@
 <!-- Replace this paragraph with what this analysis is about. -->
 
 This project was set up with
-[dsAnalysis](https://github.com/FlorianSchw/dsAnalysis). It runs the
+[dsAnalysis](https://github.com/nfdi4health/dsAnalysis). It runs the
 analysis on the live DataSHIELD servers, or locally on mock data for
 testing.
 
@@ -72,7 +72,7 @@ request. The scripts are a starting point: read and adapt them.
   `ANTHROPIC_SVAC_ID` and `ANTHROPIC_FDRL_ANALYSIS`, and "Allow GitHub
   Actions to create and approve pull requests" (Settings → Actions →
   General). Setup details are in the
-  [dsAnalysis README](https://github.com/FlorianSchw/dsAnalysis#setup).
+  [dsAnalysis README](https://github.com/nfdi4health/dsAnalysis#setup).
 
 To try the bot's scripts: check out its pull request's branch, set
 `R_CONFIG_ACTIVE = 'testing'`, restart R and run `R/main.R`.
@@ -80,4 +80,4 @@ To try the bot's scripts: check out its pull request's branch, set
 ## Help
 
 Questions, problems, or want help with the setup?
-[Open an issue on dsAnalysis](https://github.com/FlorianSchw/dsAnalysis/issues).
+[Open an issue on dsAnalysis](https://github.com/nfdi4health/dsAnalysis/issues).

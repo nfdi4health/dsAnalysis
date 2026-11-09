@@ -168,7 +168,7 @@ initProject <- function(path = "home",
 
   renv::install(c("dsBaseClient",
                   "nfdi4health/dsSupportClient",
-                  "FlorianSchw/dsAnalysis@ci/setup",
+                  "nfdi4health/dsAnalysis",
                   "config",
                   "DSLite",
                   "grateful"),

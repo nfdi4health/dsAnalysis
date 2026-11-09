@@ -15,8 +15,8 @@ DataSHIELD packages `add_dsPackage()`, `remove_dsPackage()`,
 It is also an **analyst-side helper package** in DataSHIELD terms — not
 a client, not a server package — and the starting point for the
 reusable workflow `datashield-analysis-suggest.yml` in
-`FlorianSchw/package-workflows` (local clone:
-`../package-workflows`), which drafts analysis scripts from a project's
+`nfdi4health/datashield-workflows` (local clone:
+`../datashield-workflows`), which drafts analysis scripts from a project's
 `config/analysis-plan.yml`.
 
 ## How to work here
@@ -29,10 +29,10 @@ reusable workflow `datashield-analysis-suggest.yml` in
 - Branches: work goes into `dev` (pull requests from feature branches);
   `main` only gets releases, through a `dev` → `main` pull request
   (`release-trigger.yml` checks, merges and starts `release-publish.yml`,
-  semantic-release with the shared config from `package-workflows`). The
+  semantic-release with the shared config from `datashield-workflows`). The
   bots' pull requests and sweeps target `dev`. Commits follow
   Conventional Commits (`commitlint.yml`), since they decide the version.
-- When something depends on `package-workflows`, read the referenced file
+- When something depends on `datashield-workflows`, read the referenced file
   there instead of guessing; its `CLAUDE.md` and `dev-notes/` hold the
   design.
 
@@ -45,8 +45,8 @@ Cross items out when done instead of deleting them.
 
 1. ~~**Caller files** `.github/workflows/roxygen-suggest.yml` and
    `.github/workflows/test-suggest.yml`~~ (done 2026-10-02), starting from
-   `../package-workflows/examples/roxygen-suggest.yml` and
-   `../package-workflows/examples/test-suggest.yml`. Adjust:
+   `../datashield-workflows/examples/roxygen-suggest.yml` and
+   `../datashield-workflows/examples/test-suggest.yml`. Adjust:
    - `pull_request: branches: [dev]` (changed from `main` on 2026-10-02,
      when `dev` was added), with `paths: ['R/**']`;
    - `with: datashield: true`, `datashield-type: utility` (no
@@ -60,7 +60,7 @@ Cross items out when done instead of deleting them.
    Optional inputs (comma-separated strings): `accept-reasons`,
    `code-issue-confidence` (`high`, `high,medium`, … or `none`),
    `dslite-setup` (tests: `auto`, `create`, `never`). The inputs are
-   documented in `../package-workflows/.github/workflows/*.yml`.
+   documented in `../datashield-workflows/.github/workflows/*.yml`.
 2. ~~**DESCRIPTION:**~~ (done 2026-10-02) `initMockData()` and `update_MockData()` use
    DataSHIELD connections, so their tests run against DSLite. Add
    `DSLite` and `dsBase` to `Suggests`, and `datashield/dsBase` to
@@ -69,7 +69,7 @@ Cross items out when done instead of deleting them.
    account for dsAnalysis and one federation rule per workflow (claim
    `job_workflow_ref` naming the workflow file); the repository secrets;
    the GitHub App or "Allow GitHub Actions to create and approve pull
-   requests"~~ (done). See `../package-workflows/docs/claude-setup.qmd` and
+   requests"~~ (done). See `../datashield-workflows/docs/claude-setup.qmd` and
    `docs/getting-started.qmd`.
 
 Test setup: nothing to change. `tests/testthat/setup.R` reads
@@ -78,7 +78,7 @@ Test setup: nothing to change. `tests/testthat/setup.R` reads
 
 ### B. The analysis template (`initProject()`)
 
-Checklist from `../package-workflows/dev-notes/analysis-suggest.md`,
+Checklist from `../datashield-workflows/dev-notes/analysis-suggest.md`,
 section "What dsAnalysis needs":
 
 4. ~~Remove the placeholders~~ (done 2026-10-02) `inst/templates/datashield/02_QualityCheck.R`,
@@ -87,11 +87,11 @@ section "What dsAnalysis needs":
    request: keep it (`99_` scripts don't clash with the bot's `02_`, …).
 5. ~~Add a plan template~~ (done 2026-10-02) that `initProject()` puts at
    `config/analysis-plan.yml`, from
-   `../package-workflows/examples/analysis-plan.yml`, keeping its header
+   `../datashield-workflows/examples/analysis-plan.yml`, keeping its header
    that the content is sent to the Claude API.
 6. ~~Add the caller `.github/workflows/datashield-analysis-suggest.yml`~~ (done 2026-10-02) to
    the project template, from
-   `../package-workflows/examples/datashield-analysis-suggest.yml`.
+   `../datashield-workflows/examples/datashield-analysis-suggest.yml`.
 7. ~~Optional: empty marked blocks the bot fills~~ (done 2026-10-02) —
    - in `main.R`:
      `#### bot-suggest: scripts (updated by datashield-analysis-suggest)`
@@ -100,7 +100,7 @@ section "What dsAnalysis needs":
      `#### bot-suggest: packages (updated by datashield-analysis-suggest)`
      … `#### bot-suggest: packages end`.
    Without them the bot appends its own. The marker texts are the
-   `markers:` settings in `../package-workflows/config/analysis-suggest.yml`.
+   `markers:` settings in `../datashield-workflows/config/analysis-suggest.yml`.
 8. ~~The project's `.gitignore` must not exclude `utils/mock_data/`~~ (holds, tested 2026-10-02) — the
    bot commits its mock data there.
 
@@ -153,7 +153,7 @@ the `paths:` settings of `config/analysis-suggest.yml`):
     `FlorianSchw/datashield-workflows@master`, which is to be removed —
     replace or drop it then.
 16. ~~Optional: `R-CMD-check.yaml` (r-lib's, daily) could become a short~~ (done 2026-10-02)
-    caller of `../package-workflows/.github/workflows/r-cmd-check.yml`.
+    caller of `../datashield-workflows/.github/workflows/r-cmd-check.yml`.
 18. **First release** (`dev` → `main` flow, set up 2026-10-02): remove
     `dry-run: true` from `.github/workflows/release-publish.yml` once a
     dry run has shown the expected version. With no tags, semantic-release
@@ -177,7 +177,7 @@ Facts behind these items:
   `dsTidyverse`), and entries can be stale (`sofiasiamp/dsSupportClient`).
 - **The analysis bot loads all of dsAnalysis' `R/`** with `sys.source()`
   from a dsAnalysis checkout
-  (`../package-workflows/R/functions/analysis/update_dslite_setup.R`;
+  (`../datashield-workflows/R/functions/analysis/update_dslite_setup.R`;
   until 2026-10-04 only `add_dsPackage.R` and `update_MockData.R`) and
   calls `add_dsPackage(missing)` and `update_MockData()`. So files in
   `R/` must only define functions (one per file, the user's convention),
@@ -201,7 +201,7 @@ Facts behind these items:
     `"owner/repo"`. The client from the catalogue's own entry, not by
     guessing the name. Fallback when the catalogue can't be reached: say
     so and accept an explicit `"owner/repo"`. The bot pairs server and
-    client in package-workflows (`client_package_name.R`); keep the two
+    client in datashield-workflows (`client_package_name.R`); keep the two
     approaches consistent.
 22. ~~**`version` argument:**~~ (done 2026-10-02; without a version GitHub packages get their latest release tag, not the default branch (often a .9000 development version); the client gets the server's version if it has that tag, else its latest — dsSurvival server and client versions differ) CRAN archive (`pkg@1.2.3`) for CRAN packages,
     else the GitHub tag matching the version (tags are `v6.3.2` or
@@ -242,14 +242,18 @@ Facts behind these items:
     - A step-by-step setup (install, `initProject()`, `.Renviron`,
       GitHub repo, secrets, "Allow GitHub Actions to create and approve
       pull requests"), and for help: open an issue on
-      https://github.com/FlorianSchw/dsAnalysis/issues.
-27. **Move the repository to `nfdi4health`** (planned, not before
-    2026-10-02). The GitHub App was installed on `FlorianSchw/dsAnalysis`
+      https://github.com/nfdi4health/dsAnalysis/issues.
+27. **Move the repository to `nfdi4health`** (moved 2026-10-26/27;
+    references in the repo updated 2026-11-09, callers already on `dev`;
+    `datashield-workflows` (formerly `FlorianSchw/package-workflows`) moved
+    2026-10-21; Claude GitHub App installed on `nfdi4health` 2026-11-09). The GitHub App was installed on `FlorianSchw/dsAnalysis`
     on 2026-10-02 (the token step had failed with 404: no installation
     for this repo). After the move, update:
-    - `FlorianSchw/dsAnalysis` in `DESCRIPTION` (URL, BugReports),
+    - ~~`FlorianSchw/dsAnalysis` in `DESCRIPTION` (URL, BugReports),
       `README.md`, `inst/templates/utils/README.md` (issue links) and
-      `R/initProject.R` (`renv::install("FlorianSchw/dsAnalysis")`);
+      `R/initProject.R` (`renv::install("FlorianSchw/dsAnalysis")`)~~
+      (done 2026-11-09; `initProject()` installs `nfdi4health/dsAnalysis`,
+      i.e. `main`, instead of the deleted `ci/setup` branch);
     - `../repo-governance/rulesets/*.targets.json` (owner), and the
       GitHub App installation (on `nfdi4health` instead of `FlorianSchw`);
     - the repository secrets (they don't move with a transfer) and the

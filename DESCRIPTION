@@ -28,8 +28,8 @@ Imports:
 Remotes: nfdi4health/dsSupportClient
 Encoding: UTF-8
 Roxygen: list(markdown = FALSE)
-URL: https://github.com/FlorianSchw/dsAnalysis
-BugReports: https://github.com/FlorianSchw/dsAnalysis/issues
+URL: https://github.com/nfdi4health/dsAnalysis
+BugReports: https://github.com/nfdi4health/dsAnalysis/issues
 Suggests: 
     testthat (>= 3.0.0),
     config,
