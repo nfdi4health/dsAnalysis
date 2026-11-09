@@ -1,8 +1,10 @@
 Package: dsAnalysis
 Title: Creates DataSHIELD analysis project environments
 Version: 0.0.0.9010
-Authors@R: 
-    person("Florian", "Schwarz", , "Florian.Schwarz@dife.de", role = c("aut", "cre"))
+Authors@R: c(
+    person("Florian", "Schwarz", , "Florian.Schwarz@dife.de", role = c("aut", "cre")),
+    person("Claude", role = "aut")
+  )
 Description: Creates DataSHIELD analysis project environments via pre-defined scripts. 
     Furthermore, there are multiple other handy operations for this dual env setup.
 License: GPL-3
