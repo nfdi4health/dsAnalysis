@@ -210,3 +210,37 @@ test_that("initMockData writes mock data whose means of complete numeric variabl
     testthat::expect_lt(abs(mock_mean - real_mean), 0.5 * real_sd)
   }
 })
+
+test_that("initMockData uses MockData_New as the default folder name and writes one file per server", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  mock_path <- dsAnalysis::initMockData(df = "D", datasources = cnsim$conns)
+  testthat::expect_equal(mock_path, file.path(cnsim$project, "utils/mock_data", "MockData_New"))
+  testthat::expect_true(fs::dir_exists(mock_path))
+  testthat::expect_setequal(basename(fs::dir_ls(mock_path)), c("sim1.rda", "sim2.rda", "sim3.rda"))
+})
+
+test_that("initMockData does not create the target folder when the datasources are not a list of connections", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  err <- testthat::expect_error(dsAnalysis::initMockData(folder_name = "mock-nulllist", df = "D",
+                                                        datasources = list(sim1 = cnsim$conns[[1]], sim2 = NULL)))
+  testthat::expect_equal(err$message, "The 'datasources' were expected to be a list of DSConnection-class objects")
+  testthat::expect_false(fs::dir_exists(file.path(cnsim$project, "utils/mock_data", "mock-nulllist")))
+})
+
+test_that("initMockData writes mock data for two servers whose row counts match each server's own number of rows", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  mock_path <- dsAnalysis::initMockData(folder_name = "mock-two", df = "D", datasources = cnsim$conns[c(1, 3)])
+  testthat::expect_setequal(basename(fs::dir_ls(mock_path)), c("sim1.rda", "sim3.rda"))
+  mock <- new.env()
+  load(file.path(mock_path, "sim1.rda"), envir = mock)
+  load(file.path(mock_path, "sim3.rda"), envir = mock)
+  testthat::expect_equal(nrow(mock$sim1), nrow(cnsim$real$sim1))
+  testthat::expect_equal(nrow(mock$sim3), nrow(cnsim$real$sim3))
+  testthat::expect_false(nrow(mock$sim1) == nrow(mock$sim3))
+})
