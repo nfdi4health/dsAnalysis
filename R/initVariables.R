@@ -9,7 +9,7 @@
 #' }
 #' If config/variables.yml exists, labels you filled in and fields you added are kept; variables no longer on any server are dropped, with a message. Comments in the file are not kept: it gets a new header on every run.
 #' The file's content (names, labels, categories, ranges, which study has what) is sent to the Claude API by the datashield-analysis-suggest workflow, together with the analysis plan.
-#' @param df String giving the name of the data frame on the servers; defaults to "D".
+#' @param df String naming the data frame as it exists on each server (e.g. "D"), not a local R data frame; used to build `df$variable` expressions passed to the server; defaults to "D".
 #' @param datasources A list of DSI::DSConnection-class objects obtained after login; if NULL (the default), the connections found by DSI::datashield.connections_find() are used.
 #' @param tables Optional named character vector, server name to Opal table ("project.table"), for reading the dictionaries; by default read from R/01_DS_Login.R.
 #' @param locale Language of the labels, e.g. "en"; defaults to "en".
