@@ -107,3 +107,88 @@ test_that("internal_variables_yaml writes a file that reads back as the same ent
   testthat::expect_equal(back[[1]]$note, "added by hand")
   testthat::expect_equal(back[[2]]$range, c(18L, 79L))
 })
+
+test_that("initVariables messages about servers without an Opal dictionary and writes the file at a given relative path", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  
+  testthat::expect_message(path <- dsAnalysis::initVariables(datasources = cnsim$conns, file = "meta/vars.yml"),
+                           "No Opal dictionary read for sim1, sim2, sim3")
+  testthat::expect_equal(path, file.path(cnsim$project, "meta/vars.yml"))
+  testthat::expect_true(file.exists(path))
+  written <- yaml::read_yaml(path)$variables
+  testthat::expect_length(written, 11)
+  #### no Opal dictionary: every category label stays empty
+  gender <- Find(function(v) v$name == "GENDER", written)
+  testthat::expect_equal(unlist(gender$categories, use.names = FALSE), c("", ""))
+  testthat::expect_null(gender$missing_codes)
+})
+
+test_that("initVariables writes every column of CNSIM with its type from the servers", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  
+  testthat::expect_message(path <- dsAnalysis::initVariables(datasources = cnsim$conns), "Wrote 11 variables")
+  written <- yaml::read_yaml(path)$variables
+  names_written <- vapply(written, function(v) v$name, character(1))
+  testthat::expect_equal(sort(names_written), sort(colnames(cnsim$real$sim1)))
+  
+  types <- stats::setNames(vapply(written, function(v) v$type, character(1)), names_written)
+  testthat::expect_equal(types[["GENDER"]], "categorical")
+  testthat::expect_equal(types[["PM_BMI_CATEGORICAL"]], "categorical")
+  testthat::expect_equal(types[["LAB_HDL"]], "continuous")
+  testthat::expect_equal(types[["PM_BMI_CONTINUOUS"]], "continuous")
+  
+  #### categorical entries carry levels and no range, continuous ones a range of two
+  bmi_cat <- Find(function(v) v$name == "PM_BMI_CATEGORICAL", written)
+  testthat::expect_equal(names(bmi_cat$categories), c("1", "2", "3"))
+  testthat::expect_null(bmi_cat$range)
+  hdl <- Find(function(v) v$name == "LAB_HDL", written)
+  testthat::expect_length(hdl$range, 2)
+  testthat::expect_lt(hdl$range[[1]], hdl$range[[2]])
+  testthat::expect_equal(unlist(hdl$studies), c("sim1", "sim2", "sim3"))
+})
+
+test_that("initVariables leaves out variables that are neither numeric, integer nor factor and names them in a message", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  
+  testthat::local_mocked_bindings(internal_variable_facts = function(x, datasources){
+    if (grepl("GENDER$", x)) list(type = "other") else list(type = "continuous", range = c(1, 2))
+  }, .package = "dsAnalysis")
+  
+  testthat::expect_message(path <- dsAnalysis::initVariables(datasources = cnsim$conns),
+                           "Left out \\(not numeric, integer or factor\\): GENDER")
+  written <- yaml::read_yaml(path)$variables
+  testthat::expect_length(written, 10)
+  testthat::expect_null(Find(function(v) v$name == "GENDER", written))
+})
+
+test_that("initVariables rejects an empty list of datasources", {
+  err <- testthat::expect_error(dsAnalysis::initVariables(datasources = list()))
+  testthat::expect_equal(err$message, "The 'datasources' were expected to be a list of DSConnection-class objects")
+})
+
+test_that("initVariables replaces the old header and keeps no comments on a re-run", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  path <- file.path(cnsim$project, "config", "variables.yml")
+  dir.create(dirname(path))
+  writeLines(c("# a comment of my own",
+               "variables:",
+               "  - name: GENDER",
+               "    label: Sex at birth",
+               "    type: categorical",
+               "    categories: {'0': male, '1': ''}"), path)
+  
+  testthat::expect_message(dsAnalysis::initVariables(datasources = cnsim$conns), "Wrote 11 variables")
+  lines <- readLines(path)
+  testthat::expect_false("# a comment of my own" %in% lines)
+  testthat::expect_match(lines[1], "^# Written by dsAnalysis::initVariables\\(\\)", fixed = FALSE)
+  testthat::expect_true(any(grepl("^# range: the pooled 5% and 95% quantiles", lines)))
+  testthat::expect_equal(sum(grepl("^# Written by", lines)), 1)
+})
