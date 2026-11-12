@@ -7,7 +7,7 @@
 initProject(path, name = NULL, switch_to_proj = FALSE)
 }
 \arguments{
-\item{path}{Character string giving the local directory in which to create the new project folder, e.g. "~/projects"; required, so the project is only created where you say. "home" (or "~") is the user's home directory, expanded via fs::path_expand().}
+\item{path}{Character string giving the local directory in which to create the new project folder, e.g. "~/projects"; "home" (or "~") is the user's home directory, expanded via fs::path_expand(). If left out, an interactive session asks whether to create the project in the home directory, and nothing is created without a yes; outside an interactive session (scripts, CI) the function stops.}
 
 \item{name}{Character string giving the name of the new project; required (the function stops with an error if left NULL), and is used as the name of the new subfolder created under path.}
 
