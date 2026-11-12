@@ -13,6 +13,10 @@ jobs:
       pull-requests: write
     uses: nfdi4health/datashield-workflows/.github/workflows/datashield-analysis-suggest.yml@main
     secrets:
+      # Either your Claude subscription (run `claude setup-token` and save
+      # the token as the repository secret CLAUDE_CODE_OAUTH_TOKEN) ...
+      claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      # ... or an Anthropic organization (Workload Identity Federation):
       anthropic-organization-id: ${{ secrets.ANTHROPIC_ORG_ID }}
       anthropic-service-account-id: ${{ secrets.ANTHROPIC_SVAC_ID }}
       anthropic-federation-rule-id: ${{ secrets.ANTHROPIC_FDRL_ANALYSIS }}
