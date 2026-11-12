@@ -285,3 +285,17 @@ Facts behind these items:
     `test-initMockData.R` is also still work in progress (uses
     `error_message` and `cfg_dir_overwrite` without defining them, logs in
     to opal-demo).
+30. ~~**`initVariables()`**~~ (built 2026-11-12, user's choice over keeping it
+    as the implementer's cross-repository test): writes `config/variables.yml`
+    from the servers — per variable type (`ds.class`), categories
+    (`ds.levels`) or range (pooled 5%/95% quantiles of `ds.quantileMean`,
+    never min/max), which studies have it (`ds.colnames`), labels, category
+    labels and missing codes from the Opal dictionary
+    (`opalr::opal.table_dictionary_get()` via the DSOpal connection's
+    `opal` slot; tables read from `R/01_DS_Login.R` or the `tables`
+    argument), else the label from `ds.metadata()`. A re-run keeps labels
+    and fields the analyst added. The analysis bot reads the file (its
+    format is an interface with `datashield-workflows`'
+    `read_analysis_plan()`; keep `name`, `label`, `type`, `categories`,
+    `missing_codes`, `range`, `studies` stable). Tested on DSLite; the Opal
+    dictionary only with a stand-in, not yet on a real Opal server.
