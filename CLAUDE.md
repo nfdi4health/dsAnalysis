@@ -289,8 +289,10 @@ Facts behind these items:
     policy: packages write nowhere but the session's temporary directory,
     except where the user explicitly asks (as with usethis/renv).
     - ~~`initProject()` defaulted to the home directory~~ (fixed
-      2026-11-12: `path` is required; `"home"` / `"~"` still work when
-      given). Breaking for calls without `path`.
+      2026-11-12: without `path`, an interactive session asks whether to
+      use the home directory (`internal_confirm()`, `utils::askYesNo()`);
+      outside one it stops; `"home"` / `"~"` work when given). Breaking
+      for scripts that called it without `path`.
     - Tests and examples: temporary directory only (already so);
       network tests (opal-demo) only with `skip_on_cran()`,
       `skip_if_offline()` and an opt-in environment variable, never failing

@@ -1,8 +1,8 @@
 #' @title Initiate a new project environment dedicated for DataSHIELD analysis
 #' @description Sets up a new local R project pre-configured for DataSHIELD analyses, including folder structure, starter scripts, and environment/config files for switching between live servers and local DSLite testing.
-#' @details Creates the project with usethis::create_project, manages the project's R package library with renv (renv::init, renv::install, renv::hydrate, renv::snapshot, and renv::dependencies/tools::package_dependencies to pick up further packages used by or required by the project), and downloads example CNSIM mock datasets from the dsBaseClient GitHub repository into the new project with utils::download.file. It also writes .Renviron, .gitignore, and config.yml files in the new project folder to support switching between a live DataSHIELD server setup and a local DSLite testing setup, and copies in template R scripts, a GitHub Actions workflow, and a README. All of these files and folders are created under the new project path on the analyst's machine; no existing files outside that new folder are modified, and the function stops before creating anything if that folder already exists.
-#' @param path Character string giving the local directory in which to create the new project folder, e.g. "~/projects"; required, so the project is only created where you say. "home" (or "~") is the user's home directory, expanded via fs::path_expand().
-#' @param name Character string giving the name of the new project; defaults to NULL, but the function stops with an error if it is left NULL, and the value is used as the name of the new subfolder created under path.
+#' @details Creates the project with usethis::create_project, manages the project's R package library with renv (renv::init, renv::install, renv::hydrate, renv::snapshot), and downloads example CNSIM mock datasets from the dsBaseClient GitHub repository into the new project with utils::download.file. It also writes .Renviron, .gitignore, and config.yml files in the new project folder to support switching between a live DataSHIELD server setup and a local DSLite testing setup, and copies in template R scripts, a GitHub Actions workflow, and a README. All of these files and folders are created under the new project path on the analyst's machine; no existing files outside that new folder are modified, and the function stops before creating anything if that folder already exists.
+#' @param path Character string giving the local directory in which to create the new project folder, e.g. "~/projects"; "home" (or "~") is the user's home directory, expanded via fs::path_expand(). If left out, an interactive session asks whether to create the project in the home directory, and nothing is created without a yes; outside an interactive session (scripts, CI) the function stops.
+#' @param name Character string giving the name of the new project; required (the function stops with an error if left NULL), and is used as the name of the new subfolder created under path.
 #' @param switch_to_proj Logical flag indicating whether to activate the newly created project in the current R session via usethis::proj_activate once setup is complete; defaults to FALSE.
 #' @return Invisibly returns the character string giving the path to the newly created project folder; the main effect is the creation of that folder together with its subfolders (results, utils, citations, config, .github/workflows, etc.), template R scripts, config/.Renviron/.gitignore files, downloaded mock data, and an renv-managed package library.
 #' @author Florian Schwarz for the German Institute of Human Nutrition
@@ -26,14 +26,23 @@ initProject <- function(path,
                         name = NULL,
                         switch_to_proj = FALSE){
 
-  #### no default folder: a package may only write where the user says (CRAN policy)
-  if (missing(path) || !(is.character(path) && length(path) == 1 && nzchar(path))) {
-    stop("Please provide the folder the project is created in, e.g. path = \"~/projects\".",
+  if (is.null(name)) {
+    stop("Please provide a path name for the project to be created.",
          call. = FALSE)
   }
 
-  if (is.null(name)) {
-    stop("Please provide a path name for the project to be created.",
+  #### a package may only write where the user says (CRAN policy): without a path,
+  #### the home directory only after the user confirms it in an interactive session
+  if (missing(path)) {
+    home_project <- file.path(fs::path_expand("~"), name)
+    if (!internal_confirm(paste0("Create the project in ", home_project, "?"))) {
+      stop("No project created. Please provide the folder the project is created in, e.g. path = \"~/projects\".",
+           call. = FALSE)
+    }
+    path <- "~"
+  }
+  if (!(is.character(path) && length(path) == 1 && nzchar(path))) {
+    stop("Please provide the folder the project is created in, e.g. path = \"~/projects\".",
          call. = FALSE)
   }
 
