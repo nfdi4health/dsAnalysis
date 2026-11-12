@@ -285,3 +285,15 @@ Facts behind these items:
     `test-initMockData.R` is also still work in progress (uses
     `error_message` and `cfg_dir_overwrite` without defining them, logs in
     to opal-demo).
+31. **On the way to CRAN** (user, 2026-11-12; not planned yet). CRAN's
+    policy: packages write nowhere but the session's temporary directory,
+    except where the user explicitly asks (as with usethis/renv).
+    - ~~`initProject()` defaulted to the home directory~~ (fixed
+      2026-11-12: `path` is required; `"home"` / `"~"` still work when
+      given). Breaking for calls without `path`.
+    - Tests and examples: temporary directory only (already so);
+      network tests (opal-demo) only with `skip_on_cran()`,
+      `skip_if_offline()` and an opt-in environment variable, never failing
+      when the demo server is down or changed.
+    - Blocker: `dsSupportClient` must be on CRAN first (Imports can't come
+      from GitHub), or the few functions used moved to Suggests.

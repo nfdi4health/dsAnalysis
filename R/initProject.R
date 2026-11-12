@@ -1,7 +1,7 @@
 #' @title Initiate a new project environment dedicated for DataSHIELD analysis
 #' @description Sets up a new local R project pre-configured for DataSHIELD analyses, including folder structure, starter scripts, and environment/config files for switching between live servers and local DSLite testing.
 #' @details Creates the project with usethis::create_project, manages the project's R package library with renv (renv::init, renv::install, renv::hydrate, renv::snapshot), and downloads example CNSIM mock datasets from the dsBaseClient GitHub repository into the new project with utils::download.file. It also writes .Renviron, .gitignore, and config.yml files in the new project folder to support switching between a live DataSHIELD server setup and a local DSLite testing setup, and copies in template R scripts, a GitHub Actions workflow, and a README. All of these files and folders are created under the new project path on the analyst's machine; no existing files outside that new folder are modified, and the function stops before creating anything if that folder already exists.
-#' @param path Character string giving the local directory in which to create the new project folder; defaults to "home", which is expanded to the user's home directory via fs::path_expand("~").
+#' @param path Character string giving the local directory in which to create the new project folder, e.g. "~/projects"; required, so the project is only created where you say. "home" (or "~") is the user's home directory, expanded via fs::path_expand().
 #' @param name Character string giving the name of the new project; required (the function stops with an error if left NULL), and is used as the name of the new subfolder created under path.
 #' @param switch_to_proj Logical flag indicating whether to activate the newly created project in the current R session via usethis::proj_activate once setup is complete; defaults to FALSE.
 #' @return Invisibly returns the character string giving the path to the newly created project folder; the main effect is the creation of that folder together with its subfolders (results, utils, citations, config, .github/workflows, etc.), template R scripts, config/.Renviron/.gitignore files, downloaded mock data, and an renv-managed package library.
@@ -22,9 +22,15 @@
 #' }
 #' @export
 
-initProject <- function(path = "home",
+initProject <- function(path,
                         name = NULL,
                         switch_to_proj = FALSE){
+
+  #### no default folder: a package may only write where the user says (CRAN policy)
+  if (missing(path) || !(is.character(path) && length(path) == 1 && nzchar(path))) {
+    stop("Please provide the folder the project is created in, e.g. path = \"~/projects\".",
+         call. = FALSE)
+  }
 
   if (is.null(name)) {
     stop("Please provide a path name for the project to be created.",
@@ -38,14 +44,9 @@ initProject <- function(path = "home",
 
 
   if (path == "home") {
-
-    new_project_path <- paste0(fs::path_expand("~"), "/", name)
-
-  } else {
-
-    new_project_path <- paste0(path, "/", name)
-
+    path <- "~"
   }
+  new_project_path <- paste0(fs::path_expand(path), "/", name)
 
   if (fs::dir_exists(new_project_path)) {
     stop(paste0("The path and name you have provided would overwrite an existing

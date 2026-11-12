@@ -4,10 +4,10 @@
 \alias{initProject}
 \title{Initiate a new project environment dedicated for DataSHIELD analysis}
 \usage{
-initProject(path = "home", name = NULL, switch_to_proj = FALSE)
+initProject(path, name = NULL, switch_to_proj = FALSE)
 }
 \arguments{
-\item{path}{Character string giving the local directory in which to create the new project folder; defaults to "home", which is expanded to the user's home directory via fs::path_expand("~").}
+\item{path}{Character string giving the local directory in which to create the new project folder, e.g. "~/projects"; required, so the project is only created where you say. "home" (or "~") is the user's home directory, expanded via fs::path_expand().}
 
 \item{name}{Character string giving the name of the new project; required (the function stops with an error if left NULL), and is used as the name of the new subfolder created under path.}
 
