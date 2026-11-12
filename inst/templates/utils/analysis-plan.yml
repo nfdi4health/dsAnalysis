@@ -50,6 +50,11 @@ package-status: [production]
 # it is your choice.
 mock-data: plan
 
+# The variables: written by dsAnalysis::initVariables() to
+# config/variables.yml from the servers' metadata (types, categories,
+# ranges, labels, which study has what). Entries here are added on top
+# of it by name, e.g. a variable's `role`; without that file, list
+# all variables here.
 variables:                        # shaped like an Opal/Armadillo dictionary
   - name: DIS_DIAB
     label: History of diabetes

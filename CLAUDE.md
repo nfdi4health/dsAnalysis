@@ -285,3 +285,31 @@ Facts behind these items:
     `test-initMockData.R` is also still work in progress (uses
     `error_message` and `cfg_dir_overwrite` without defining them, logs in
     to opal-demo).
+30. ~~**`initVariables()`**~~ (built 2026-11-12, user's choice over keeping it
+    as the implementer's cross-repository test): writes `config/variables.yml`
+    from the servers — per variable type (`ds.class`), categories
+    (`ds.levels`) or range (pooled 5%/95% quantiles of `ds.quantileMean`,
+    never min/max), which studies have it (`ds.colnames`), labels, category
+    labels and missing codes from the Opal dictionary
+    (`opalr::opal.table_dictionary_get()` via the DSOpal connection's
+    `opal` slot; tables read from `R/01_DS_Login.R` or the `tables`
+    argument), else the label from `ds.metadata()`. A re-run keeps labels
+    and fields the analyst added. The analysis bot reads the file (its
+    format is an interface with `datashield-workflows`'
+    `read_analysis_plan()`; keep `name`, `label`, `type`, `categories`,
+    `missing_codes`, `range`, `studies` stable). Tested on DSLite; the Opal
+    dictionary only with a stand-in, not yet on a real Opal server.
+31. **On the way to CRAN** (user, 2026-11-12; not planned yet). CRAN's
+    policy: packages write nowhere but the session's temporary directory,
+    except where the user explicitly asks (as with usethis/renv).
+    - ~~`initProject()` defaulted to the home directory~~ (fixed
+      2026-11-12: without `path`, an interactive session asks whether to
+      use the home directory (`internal_confirm()`, `utils::askYesNo()`);
+      outside one it stops; `"home"` / `"~"` work when given). Breaking
+      for scripts that called it without `path`.
+    - Tests and examples: temporary directory only (already so);
+      network tests (opal-demo) only with `skip_on_cran()`,
+      `skip_if_offline()` and an opt-in environment variable, never failing
+      when the demo server is down or changed.
+    - Blocker: `dsSupportClient` must be on CRAN first (Imports can't come
+      from GitHub), or the few functions used moved to Suggests.

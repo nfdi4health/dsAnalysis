@@ -24,7 +24,8 @@ Imports:
     DSOpal,
     dsBaseClient,
     dsSupportClient,
-    methods
+    methods,
+    yaml
 Remotes: nfdi4health/dsSupportClient
 Encoding: UTF-8
 Roxygen: list(markdown = FALSE)
@@ -36,6 +37,7 @@ Suggests:
     rjson,
     DSLite,
     dsBase,
+    opalr,
     withr
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.1.0

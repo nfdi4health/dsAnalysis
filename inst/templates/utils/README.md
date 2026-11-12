@@ -63,9 +63,13 @@ variables and the steps. Each push that changes it runs the workflow in
 script per step, tests them on mock data and proposes them as a pull
 request. The scripts are a starting point: read and adapt them.
 
-- **What is sent to the Claude API:** the plan's content (variable
-  names, categories, study names, steps). Don't put anything
-  confidential in it.
+- **The variables:** after logging in to the live servers,
+  `dsAnalysis::initVariables(datasources = conns)` writes them to
+  `config/variables.yml` (types, categories, ranges, which study has
+  what, labels from the Opal dictionary). The plan builds on it.
+- **What is sent to the Claude API:** the content of the plan and of
+  `config/variables.yml` (variable names, labels, categories, ranges,
+  study names, steps). Don't put anything confidential in them.
 - **What is never sent:** your data, credentials and `R/01_DS_Login.R`.
 - **No server credentials on GitHub:** the workflow runs in testing mode
   on mock data. It only needs your Claude access — the secret
