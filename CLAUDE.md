@@ -299,3 +299,17 @@ Facts behind these items:
     `read_analysis_plan()`; keep `name`, `label`, `type`, `categories`,
     `missing_codes`, `range`, `studies` stable). Tested on DSLite; the Opal
     dictionary only with a stand-in, not yet on a real Opal server.
+31. **On the way to CRAN** (user, 2026-11-12; not planned yet). CRAN's
+    policy: packages write nowhere but the session's temporary directory,
+    except where the user explicitly asks (as with usethis/renv).
+    - ~~`initProject()` defaulted to the home directory~~ (fixed
+      2026-11-12: without `path`, an interactive session asks whether to
+      use the home directory (`internal_confirm()`, `utils::askYesNo()`);
+      outside one it stops; `"home"` / `"~"` work when given). Breaking
+      for scripts that called it without `path`.
+    - Tests and examples: temporary directory only (already so);
+      network tests (opal-demo) only with `skip_on_cran()`,
+      `skip_if_offline()` and an opt-in environment variable, never failing
+      when the demo server is down or changed.
+    - Blocker: `dsSupportClient` must be on CRAN first (Imports can't come
+      from GitHub), or the few functions used moved to Suggests.
