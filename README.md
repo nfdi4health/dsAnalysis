@@ -169,11 +169,21 @@ responsibility.
 Details:
 [DataSHIELD analysis scripts](https://github.com/nfdi4health/datashield-workflows/blob/main/docs/datashield-analysis-suggest.qmd).
 
+**The variables don't have to be typed in.** After logging in to the
+live servers, `initVariables(datasources = conns)` writes
+`config/variables.yml`: every variable the studies hold, with its type,
+categories or range (the pooled 5% and 95% quantiles), which study has
+it, and the labels, category labels and missing-value codes from the
+Opal dictionary. Only aggregates and metadata are read. Fill in labels
+it couldn't find; a re-run keeps them. The plan builds on this file, and
+its own `variables:` entries (e.g. a `role`) are added on top.
+
 ### Data protection
 
-The **content of the analysis plan is sent to the Claude API**: variable
-names and labels, categories, study names and the steps. Don't put
-anything confidential in the plan.
+The **content of the analysis plan and of `config/variables.yml` is sent
+to the Claude API**: variable names and labels, categories, ranges, which
+study has which variable, study names and the steps. Don't put anything
+confidential in them.
 
 Your **data, credentials and `R/01_DS_Login.R` are never sent**. The
 scripts are tested on generated mock data only.

@@ -2,7 +2,7 @@ name: DataSHIELD Analysis Suggestions
 
 on:
   push:
-    paths: ['config/analysis-plan.yml']
+    paths: ['config/analysis-plan.yml', 'config/variables.yml']
   workflow_dispatch:
 
 jobs:
