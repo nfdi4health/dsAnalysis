@@ -32,6 +32,12 @@ reusable workflow `datashield-analysis-suggest.yml` in
   semantic-release with the shared config from `datashield-workflows`). The
   bots' pull requests and sweeps target `dev`. Commits follow
   Conventional Commits (`commitlint.yml`), since they decide the version.
+- Claude Code sessions name every branch `agent-suggest/<type>/<topic>`
+  (type as in the commit messages: `fix`, `feat`, `ci`, `docs`, …) and open
+  one pull request per branch into `dev`, never stacked on another branch.
+  `cleanup-suggestion-branch.yml` deletes these branches once their pull
+  request is closed (decided 2026-11-09; see `datashield-workflows`'
+  `CLAUDE.md`).
 - When something depends on `datashield-workflows`, read the referenced file
   there instead of guessing; its `CLAUDE.md` and `dev-notes/` hold the
   design.
