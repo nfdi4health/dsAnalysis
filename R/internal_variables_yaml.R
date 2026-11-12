@@ -1,7 +1,7 @@
 #### the lines of config/variables.yml, compact and readable
 #' @title Format variable entries as YAML lines
 #' @description Turns the entries of initVariables() into the lines of config/variables.yml, with short lists on one line (e.g. range: [4.1, 8.11]) so the file stays easy to read and edit.
-#' @details Texts are written in double quotes (with R's escapes, which YAML reads the same way), numbers as they are. Fields an analyst added to an entry are written with yaml::as.yaml() below the known ones. Writes nothing itself.
+#' @details Strings are quoted with escapes (R's escaping matches how YAML reads them); numbers are written as formatted plain values. Known fields (name, label, type, categories, missing_codes, range, studies) are written first in a fixed order; categories are written as one "code": "label" line per entry; missing_codes, range and studies are written as flow-style lists (e.g. [4.1, 8.11]), with studies always included even if empty. Any other fields present on the entry are appended below via yaml::as.yaml(). This is a local formatting helper: it builds and returns lines of YAML text and does not contact a DataSHIELD server.
 #' @param variables A list of variable entries (name, label, type, categories, missing_codes, range, studies, and any other fields).
 #' @return A character vector of lines, starting with "variables:".
 internal_variables_yaml <- function(variables){
