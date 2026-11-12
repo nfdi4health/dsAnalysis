@@ -4,10 +4,12 @@
 \alias{internal_confirm}
 \title{Ask the user to confirm}
 \usage{
-internal_confirm(question)
+internal_confirm(question, ask = interactive())
 }
 \arguments{
 \item{question}{The question to show, ending with a question mark.}
+
+\item{ask}{Whether the session can ask; defaults to interactive(). An argument so tests can set it: testthat can't replace base functions such as interactive().}
 }
 \value{
 TRUE if the user answered yes, FALSE otherwise.

@@ -16,5 +16,5 @@ A named character vector, server name to table ("project.table"); empty if the f
 Reads which Opal table each server's login assigns, from the builder$append() calls of the project's login script (R/01_DS_Login.R), without running it.
 }
 \details{
-The login script is read as text and parsed, never sourced, so no connection is made and no credentials are evaluated. Only append() calls that name both a server and a table as plain strings count; a table given in another way (e.g. Sys.getenv()) is left out, and the caller then has no table for that server.
+The login script is read as text and parsed (not sourced), so no connection is made, no credentials are evaluated, and no server-side call is constructed or dispatched by this function. Only `builder$append()` calls that name both `server` and `table` as plain character strings are captured; a table supplied another way (e.g. via `Sys.getenv()`) is skipped, leaving the caller with no table for that server. This is a purely local, static-analysis helper used to prepare arguments for later DataSHIELD calls elsewhere in the package.
 }

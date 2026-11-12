@@ -7,7 +7,7 @@
 initProject(path, name = NULL, switch_to_proj = FALSE)
 }
 \arguments{
-\item{path}{Character string giving the local directory in which to create the new project folder, e.g. "~/projects"; "home" (or "~") is the user's home directory, expanded via fs::path_expand(). If left out, an interactive session asks whether to create the project in the home directory, and nothing is created without a yes; outside an interactive session (scripts, CI) the function stops.}
+\item{path}{Character string giving the local directory in which to create the new project folder, e.g. "~/projects"; the literal value "home" is treated the same as "~" and both are expanded to the user's home directory via fs::path_expand(). If left out, an interactive session asks whether to create the project directly under the home directory and, if confirmed, path is set to "~"; outside an interactive session, or if not confirmed, the function stops without creating anything.}
 
 \item{name}{Character string giving the name of the new project; required (the function stops with an error if left NULL), and is used as the name of the new subfolder created under path.}
 
@@ -20,7 +20,7 @@ Invisibly returns the character string giving the path to the newly created proj
 Sets up a new local R project pre-configured for DataSHIELD analyses, including folder structure, starter scripts, and environment/config files for switching between live servers and local DSLite testing.
 }
 \details{
-Creates the project with usethis::create_project, manages the project's R package library with renv (renv::init, renv::install, renv::hydrate, renv::snapshot), and downloads example CNSIM mock datasets from the dsBaseClient GitHub repository into the new project with utils::download.file. It also writes .Renviron, .gitignore, and config.yml files in the new project folder to support switching between a live DataSHIELD server setup and a local DSLite testing setup, and copies in template R scripts, a GitHub Actions workflow, and a README. All of these files and folders are created under the new project path on the analyst's machine; no existing files outside that new folder are modified, and the function stops before creating anything if that folder already exists.
+Creates the project with usethis::create_project(), manages its dedicated package library with renv (renv::init(), renv::install(), renv::hydrate(), renv::snapshot()), and downloads example CNSIM mock datasets from the dsBaseClient GitHub repository via utils::download.file(). It also writes .Renviron, .gitignore, and config.yml files, and copies in template R scripts, an analysis-plan.yml, a GitHub Actions workflow, a dependencies.R file, and a README; this is purely local project scaffolding and does not contact any DataSHIELD server.
 }
 \examples{
 \dontrun{

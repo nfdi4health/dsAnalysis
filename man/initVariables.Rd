@@ -13,7 +13,7 @@ initVariables(
 )
 }
 \arguments{
-\item{df}{String giving the name of the data frame on the servers; defaults to "D".}
+\item{df}{String naming the data frame as it exists on each server (e.g. "D"), not a local R data frame; used to build `df$variable` expressions passed to the server; defaults to "D".}
 
 \item{datasources}{A list of DSI::DSConnection-class objects obtained after login; if NULL (the default), the connections found by DSI::datashield.connections_find() are used.}
 
