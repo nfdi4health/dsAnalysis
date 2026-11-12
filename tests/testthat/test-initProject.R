@@ -45,36 +45,49 @@ test_that("initProject stops before creating anything when the project folder ex
   testthat::expect_equal(list.files(file.path(tmp, "taken")), character(0))
 })
 
-test_that("initProject rejects a non-logical switch_to_proj and creates nothing", {
-  tmp <- withr::local_tempdir()
-  err <- testthat::expect_error(dsAnalysis::initProject(path = tmp, name = "my-analysis", switch_to_proj = "yes"))
+test_that("initProject checks name before path, so a missing name errors even with a bad path", {
+  err <- testthat::expect_error(dsAnalysis::initProject(path = 42, name = NULL))
+  testthat::expect_match(err$message, "provide a path name for the project")
+  testthat::expect_null(err$call)
+})
+
+test_that("initProject rejects a non-logical switch_to_proj after a confirmed home directory and creates nothing", {
+  home <- withr::local_tempdir()
+  withr::local_envvar(HOME = home, R_USER = home)
+  testthat::local_mocked_bindings(internal_confirm = function(question) TRUE)
+  err <- testthat::expect_error(dsAnalysis::initProject(name = "my-analysis", switch_to_proj = "yes"))
   testthat::expect_match(err$message, "switch_to_proj has to be logical")
   testthat::expect_null(err$call)
-  testthat::expect_length(list.files(tmp, all.files = TRUE, no.. = TRUE), 0)
+  testthat::expect_false(dir.exists(file.path(home, "my-analysis")))
 })
 
-test_that("initProject reports the expanded path in the overwrite error when path is \"home\"", {
-  home_dir <- fs::path_expand("~")
-  existing <- basename(list.dirs(home_dir, recursive = FALSE))[1]
-  testthat::skip_if(is.na(existing) || length(existing) == 0)
-  err <- testthat::expect_error(dsAnalysis::initProject(path = "home", name = existing))
+test_that("initProject treats path = 'home' like the home directory when checking for an existing folder", {
+  home <- withr::local_tempdir()
+  withr::local_envvar(HOME = home, R_USER = home)
+  dir.create(file.path(home, "taken"))
+  err <- testthat::expect_error(dsAnalysis::initProject(path = "home", name = "taken"))
   testthat::expect_match(err$message, "would overwrite an existing")
-  testthat::expect_true(grepl(paste0(home_dir, "/", existing), err$message, fixed = TRUE))
+  testthat::expect_match(err$message, file.path(fs::path_expand("~"), "taken"), fixed = TRUE)
+  testthat::expect_equal(list.files(file.path(home, "taken")), character(0))
 })
 
-test_that("initProject expands a tilde path in the overwrite error message", {
-  home_dir <- fs::path_expand("~")
-  existing <- basename(list.dirs(home_dir, recursive = FALSE))[1]
-  testthat::skip_if(is.na(existing) || length(existing) == 0)
-  err <- testthat::expect_error(dsAnalysis::initProject(path = "~", name = existing))
-  testthat::expect_match(err$message, "would overwrite an existing")
-  testthat::expect_true(grepl(paste0(home_dir, "/", existing), err$message, fixed = TRUE))
-  testthat::expect_false(grepl("~", err$message, fixed = TRUE))
-})
-
-test_that("initProject rejects a logical NA for switch_to_proj only after path and name are valid", {
+test_that("initProject with a path never asks for confirmation", {
   tmp <- withr::local_tempdir()
-  testthat::expect_error(dsAnalysis::initProject(path = tmp, name = "my-analysis", switch_to_proj = 1), "switch_to_proj has to be logical")
-  testthat::expect_error(dsAnalysis::initProject(path = list(TRUE), name = "my-analysis", switch_to_proj = TRUE), "provide the folder")
-  testthat::expect_length(list.files(tmp, all.files = TRUE, no.. = TRUE), 0)
+  dir.create(file.path(tmp, "taken"))
+  asked <- 0L
+  testthat::local_mocked_bindings(internal_confirm = function(question){
+    asked <<- asked + 1L
+    FALSE
+  })
+  testthat::expect_error(dsAnalysis::initProject(path = tmp, name = "taken"), "would overwrite an existing")
+  testthat::expect_equal(asked, 0L)
+})
+
+test_that("initProject rejects a non-logical switch_to_proj before the existing-folder check", {
+  tmp <- withr::local_tempdir()
+  dir.create(file.path(tmp, "taken"))
+  err <- testthat::expect_error(dsAnalysis::initProject(path = tmp, name = "taken", switch_to_proj = 1))
+  testthat::expect_match(err$message, "switch_to_proj has to be logical")
+  testthat::expect_null(err$call)
+  testthat::expect_equal(list.files(tmp, all.files = TRUE, no.. = TRUE), "taken")
 })
