@@ -180,28 +180,37 @@ scripts are tested on generated mock data only.
 
 The workflow **never needs your server credentials**: it runs in testing
 mode, on DSLite with mock data. Don't put DataSHIELD users or passwords
-into GitHub secrets — the only secrets it needs are the Anthropic ones
+into GitHub secrets — the only secret it needs is your Claude access
 below.
 
 ### Setup
 
 Once per project repository on GitHub:
 
-1. **Claude access.** In the Anthropic Console, a service account for
-   the repository and a federation rule for the workflow (claim
-   `job_workflow_ref`, naming
-   `nfdi4health/datashield-workflows/.github/workflows/datashield-analysis-suggest.yml@refs/heads/main`).
-   See
-   [Claude setup](https://github.com/nfdi4health/datashield-workflows/blob/main/docs/claude-setup.qmd).
-2. **Repository secrets** (Settings → Secrets and variables → Actions):
+1. **Claude access**, one of two ways:
+   - **Your Claude subscription** (Pro or Max; for a project you run
+     yourself): run `claude setup-token` in a terminal and save the token
+     as the repository secret `CLAUDE_CODE_OAUTH_TOKEN` (Settings →
+     Secrets and variables → Actions). The runs count towards your
+     subscription's usage limits.
+   - **An Anthropic organization** (paid per use, e.g. for a team): in the
+     Anthropic Console, a service account for the repository and a
+     federation rule for the workflow (claim `job_workflow_ref`, naming
+     `nfdi4health/datashield-workflows/.github/workflows/datashield-analysis-suggest.yml@refs/heads/main`),
+     see
+     [Claude setup](https://github.com/nfdi4health/datashield-workflows/blob/main/docs/claude-setup.qmd),
+     and these repository secrets:
 
-   | Secret | Value |
-   |--------|-------|
-   | `ANTHROPIC_ORG_ID` | Your Anthropic organization ID |
-   | `ANTHROPIC_SVAC_ID` | The service account of this repository |
-   | `ANTHROPIC_FDRL_ANALYSIS` | The federation rule of the workflow |
+     | Secret | Value |
+     |--------|-------|
+     | `ANTHROPIC_ORG_ID` | Your Anthropic organization ID |
+     | `ANTHROPIC_SVAC_ID` | The service account of this repository |
+     | `ANTHROPIC_FDRL_ANALYSIS` | The federation rule of the workflow |
 
-3. **Pull requests.** Turn on "Allow GitHub Actions to create and
+   With a subscription, the plan's content falls under your plan's
+   consumer terms: check the "Help improve Claude" setting before a real
+   plan goes in.
+2. **Pull requests.** Turn on "Allow GitHub Actions to create and
    approve pull requests" (Settings → Actions → General). Alternatively,
    set up a GitHub App with the secrets `APP_CLIENT_ID` and
    `APP_PRIVATE_KEY`; then the bot's pull requests also trigger your

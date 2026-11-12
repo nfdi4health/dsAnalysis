@@ -68,8 +68,10 @@ request. The scripts are a starting point: read and adapt them.
   confidential in it.
 - **What is never sent:** your data, credentials and `R/01_DS_Login.R`.
 - **No server credentials on GitHub:** the workflow runs in testing mode
-  on mock data. It only needs the Anthropic secrets `ANTHROPIC_ORG_ID`,
-  `ANTHROPIC_SVAC_ID` and `ANTHROPIC_FDRL_ANALYSIS`, and "Allow GitHub
+  on mock data. It only needs your Claude access — the secret
+  `CLAUDE_CODE_OAUTH_TOKEN` (your Claude subscription, from
+  `claude setup-token`) or the Anthropic secrets `ANTHROPIC_ORG_ID`,
+  `ANTHROPIC_SVAC_ID` and `ANTHROPIC_FDRL_ANALYSIS` — and "Allow GitHub
   Actions to create and approve pull requests" (Settings → Actions →
   General). Setup details are in the
   [dsAnalysis README](https://github.com/nfdi4health/dsAnalysis#setup).
