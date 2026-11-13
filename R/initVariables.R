@@ -2,7 +2,7 @@
 #' @description Reads which variables the studies hold, their types, categories, ranges and labels, and writes them to config/variables.yml, the variable list the analysis plan builds on.
 #' @details Everything comes from aggregates and metadata, never from individual data:
 #' \itemize{
-#'   \item which study has which variable: ds.colnames();
+#'   \item which study has which variable: ds.colnames(), without the studies where all its values are missing (ds.length() and ds.numNA()); a variable missing everywhere is left out and named in a message;
 #'   \item the type: ds.class() (factor = categorical, integer, numeric = continuous); variables of other types (e.g. text) are left out and named in a message;
 #'   \item categories: ds.levels(); ranges: the pooled 5\% and 95\% quantiles from ds.quantileMean(), not the minimum and maximum, which could identify a person;
 #'   \item labels, category labels and missing-value codes: the Opal dictionary of each study's table (opalr, needs the "view dictionary" permission; the table is read from R/01_DS_Login.R or given in tables); where it can't be read, the variable label from ds.metadata(); category labels then stay empty.
@@ -47,10 +47,17 @@ initVariables <- function(df = "D", datasources = NULL, tables = NULL, locale = 
   unread <- servers[vapply(dictionaries, is.null, logical(1))]
 
   skipped <- character(0)
+  empty <- character(0)
   entries <- list()
   for (name in names_all) {
     studies <- servers[vapply(servers, function(s) name %in% columns[[s]], logical(1))]
     x <- paste0(df, "$", name)
+    #### a study whose values are all missing doesn't count as having the variable
+    studies <- internal_studies_with_data(x, datasources[studies])
+    if (length(studies) == 0) {
+      empty <- c(empty, name)
+      next
+    }
     facts <- internal_variable_facts(x, datasources[studies])
     if (facts$type == "other") {
       skipped <- c(skipped, name)
@@ -105,6 +112,9 @@ initVariables <- function(df = "D", datasources = NULL, tables = NULL, locale = 
   writeLines(c(header, internal_variables_yaml(merged$variables)), path)
 
   message(sprintf("Wrote %d variables to %s.", length(merged$variables), file))
+  if (length(empty) > 0) {
+    message("Left out (all values missing in every study): ", paste(empty, collapse = ", "))
+  }
   if (length(skipped) > 0) {
     message("Left out (not numeric, integer or factor): ", paste(skipped, collapse = ", "))
   }

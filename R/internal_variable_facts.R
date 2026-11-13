@@ -29,7 +29,7 @@ internal_variable_facts <- function(x, datasources){
     utils::capture.output(
       quantiles <- tryCatch(dsBaseClient::ds.quantileMean(x, type = "combine", datasources = datasources),
                             error = function(e) NULL))
-    if (!is.null(quantiles) && all(c("5%", "95%") %in% names(quantiles))) {
+    if (!is.null(quantiles) && all(c("5%", "95%") %in% names(quantiles)) && !anyNA(quantiles[c("5%", "95%")])) {
       digits <- if (type == "integer") 0 else 2
       facts$range <- round(unname(quantiles[c("5%", "95%")]), digits)
     }

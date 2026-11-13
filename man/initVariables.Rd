@@ -32,7 +32,7 @@ Reads which variables the studies hold, their types, categories, ranges and labe
 \details{
 Everything comes from aggregates and metadata, never from individual data:
 \itemize{
-  \item which study has which variable: ds.colnames();
+  \item which study has which variable: ds.colnames(), without the studies where all its values are missing (ds.length() and ds.numNA()); a variable missing everywhere is left out and named in a message;
   \item the type: ds.class() (factor = categorical, integer, numeric = continuous); variables of other types (e.g. text) are left out and named in a message;
   \item categories: ds.levels(); ranges: the pooled 5\% and 95\% quantiles from ds.quantileMean(), not the minimum and maximum, which could identify a person;
   \item labels, category labels and missing-value codes: the Opal dictionary of each study's table (opalr, needs the "view dictionary" permission; the table is read from R/01_DS_Login.R or given in tables); where it can't be read, the variable label from ds.metadata(); category labels then stay empty.
