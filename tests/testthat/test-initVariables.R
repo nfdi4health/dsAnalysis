@@ -192,3 +192,41 @@ test_that("initVariables replaces the old header and keeps no comments on a re-r
   testthat::expect_true(any(grepl("^# range: the pooled 5% and 95% quantiles", lines)))
   testthat::expect_equal(sum(grepl("^# Written by", lines)), 1)
 })
+
+test_that("internal_studies_with_data leaves out studies where all values are missing", {
+  conns <- list(a = "conn_a", b = "conn_b", c = "conn_c")
+  testthat::local_mocked_bindings(
+    ds.length = function(x, type, datasources) list(`length of D$X in a` = 10, `length of D$X in b` = 5, `length of D$X in c` = 8),
+    ds.numNA = function(x, datasources) list(a = 2, b = 5, c = 0),
+    .package = "dsBaseClient")
+  testthat::expect_equal(internal_studies_with_data("D$X", conns), c("a", "c"))
+})
+
+test_that("internal_studies_with_data keeps all studies when the counts can't be read", {
+  conns <- list(a = "conn_a", b = "conn_b")
+  testthat::local_mocked_bindings(
+    ds.length = function(x, type, datasources) stop("disclosure control"),
+    ds.numNA = function(x, datasources) list(a = 0, b = 0),
+    .package = "dsBaseClient")
+  testthat::expect_equal(internal_studies_with_data("D$X", conns), c("a", "b"))
+})
+
+test_that("initVariables leaves out a study whose values are all missing, and a variable missing everywhere", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  #### stand-ins: LAB_TSC has no values in sim2, LAB_HDL none anywhere
+  testthat::local_mocked_bindings(internal_studies_with_data = function(x, datasources){
+    if (x == "D$LAB_HDL") return(character(0))
+    if (x == "D$LAB_TSC") return(setdiff(names(datasources), "sim2"))
+    names(datasources)
+  })
+
+  testthat::expect_message(path <- dsAnalysis::initVariables(datasources = cnsim$conns),
+                           "all values missing in every study\\): LAB_HDL")
+  written <- yaml::read_yaml(path)$variables
+  by_name <- stats::setNames(written, vapply(written, function(v) v$name, character(1)))
+  testthat::expect_null(by_name$LAB_HDL)
+  testthat::expect_equal(unlist(by_name$LAB_TSC$studies), c("sim1", "sim3"))
+  testthat::expect_length(by_name$LAB_TSC$range, 2)
+})
