@@ -230,3 +230,115 @@ test_that("initVariables leaves out a study whose values are all missing, and a 
   testthat::expect_equal(unlist(by_name$LAB_TSC$studies), c("sim1", "sim3"))
   testthat::expect_length(by_name$LAB_TSC$range, 2)
 })
+
+test_that("initVariables uses the tables argument for the Opal dictionary and reports only the servers left without one", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  seen <- list()
+  testthat::local_mocked_bindings(internal_opal_dictionary = function(connection, table, locale = "en"){
+    seen[[length(seen) + 1]] <<- table
+    if (is.na(table)) return(NULL)
+    list(labels = list(GENDER = "Sex of the participant"),
+         categories = data.frame(variable = "GENDER", name = c("0", "1"), missing = c(FALSE, FALSE),
+                                 label = c("female", "male"), stringsAsFactors = FALSE))
+  })
+  
+  testthat::expect_message(path <- dsAnalysis::initVariables(datasources = cnsim$conns,
+                                                             tables = list(sim1 = "CNSIM.CNSIM1")),
+                           "No Opal dictionary read for sim2, sim3")
+  testthat::expect_equal(unlist(seen), c("CNSIM.CNSIM1", NA, NA))
+  written <- yaml::read_yaml(path)$variables
+  gender <- Find(function(v) v$name == "GENDER", written)
+  testthat::expect_equal(gender$label, "Sex of the participant")
+  testthat::expect_equal(gender$categories, list(`0` = "female", `1` = "male"))
+  testthat::expect_null(gender$missing_codes)
+})
+
+test_that("initVariables drops a dictionary's missing codes from the categories and lists them under missing_codes", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  testthat::local_mocked_bindings(internal_opal_dictionary = function(connection, table, locale = "en"){
+    list(labels = list(),
+         categories = data.frame(variable = "PM_BMI_CATEGORICAL", name = c("1", "2", "3"),
+                                 missing = c(FALSE, FALSE, TRUE), label = c("normal", "overweight", "unknown"),
+                                 stringsAsFactors = FALSE))
+  })
+  
+  testthat::expect_message(path <- dsAnalysis::initVariables(datasources = cnsim$conns), "Wrote 11 variables")
+  written <- yaml::read_yaml(path)$variables
+  bmi <- Find(function(v) v$name == "PM_BMI_CATEGORICAL", written)
+  testthat::expect_equal(names(bmi$categories), c("1", "2"))
+  testthat::expect_equal(unlist(bmi$categories, use.names = FALSE), c("normal", "overweight"))
+  testthat::expect_equal(unlist(bmi$missing_codes), "3")
+})
+
+test_that("initVariables keeps a variable held by only some servers and lists just those studies", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  columns_real <- dsBaseClient::ds.colnames("D", datasources = cnsim$conns)
+  testthat::local_mocked_bindings(ds.colnames = function(x, datasources){
+    columns_real$sim2 <- setdiff(columns_real$sim2, "LAB_HDL")
+    columns_real
+  }, .package = "dsBaseClient")
+  
+  testthat::expect_message(path <- dsAnalysis::initVariables(datasources = cnsim$conns), "Wrote 11 variables")
+  written <- yaml::read_yaml(path)$variables
+  hdl <- Find(function(v) v$name == "LAB_HDL", written)
+  testthat::expect_equal(unlist(hdl$studies), c("sim1", "sim3"))
+  tsc <- Find(function(v) v$name == "LAB_TSC", written)
+  testthat::expect_equal(unlist(tsc$studies), c("sim1", "sim2", "sim3"))
+})
+
+test_that("initVariables does not message about empty or skipped variables when every variable has data", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  
+  messages <- testthat::capture_messages(dsAnalysis::initVariables(datasources = cnsim$conns))
+  testthat::expect_false(any(grepl("all values missing in every study", messages)))
+  testthat::expect_false(any(grepl("not numeric, integer or factor", messages)))
+  testthat::expect_false(any(grepl("No longer on any server", messages)))
+  testthat::expect_true(any(grepl("Wrote 11 variables to config/variables.yml\\.", messages)))
+})
+
+test_that("initVariables asks for the facts and the label of only the studies that have data for a variable", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  asked_facts <- list()
+  asked_label <- list()
+  testthat::local_mocked_bindings(
+    internal_studies_with_data = function(x, datasources){
+      if (x == "D$LAB_TSC") return(setdiff(names(datasources), "sim2"))
+      names(datasources)
+    },
+    internal_variable_facts = function(x, datasources){
+      asked_facts[[x]] <<- names(datasources)
+      list(type = "continuous", range = c(1, 2))
+    },
+    internal_metadata_label = function(x, datasources){
+      asked_label[[x]] <<- names(datasources)
+      ""
+    })
+  
+  testthat::expect_message(dsAnalysis::initVariables(datasources = cnsim$conns), "Wrote 11 variables")
+  testthat::expect_equal(asked_facts[["D$LAB_TSC"]], c("sim1", "sim3"))
+  testthat::expect_equal(asked_label[["D$LAB_TSC"]], c("sim1", "sim3"))
+  testthat::expect_equal(asked_facts[["D$GENDER"]], c("sim1", "sim2", "sim3"))
+})
+
+test_that("initVariables writes the file into a directory that does not exist yet and returns its path invisibly", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  
+  testthat::expect_message(path <- dsAnalysis::initVariables(datasources = cnsim$conns,
+                                                             file = "a/b/c/vars.yml"),
+                           "Wrote 11 variables to a/b/c/vars.yml\\.")
+  testthat::expect_equal(path, file.path(cnsim$project, "a/b/c/vars.yml"))
+  testthat::expect_true(dir.exists(file.path(cnsim$project, "a", "b", "c")))
+  testthat::expect_length(yaml::read_yaml(path)$variables, 11)
+})
