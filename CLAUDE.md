@@ -32,6 +32,13 @@ reusable workflow `datashield-analysis-suggest.yml` in
   semantic-release with the shared config from `datashield-workflows`). The
   bots' pull requests and sweeps target `dev`. Commits follow
   Conventional Commits (`commitlint.yml`), since they decide the version.
+- **Breaking changes (user, 2026-11-16):** before any commit that marks
+  a breaking change (`type!:` or a `BREAKING CHANGE:` footer), and
+  before any change that would break callers or users without such a
+  marker, ask the user first: what breaks (inputs, arguments, file
+  formats, behaviour), for whom, and whether a non-breaking way exists
+  (e.g. the old name kept as a deprecated alias for a while). Applies
+  from now on, not only once releases exist.
 - Claude Code sessions name every branch `agent-suggest/<type>/<topic>`
   (type as in the commit messages: `fix`, `feat`, `ci`, `docs`, …) and open
   one pull request per branch into `dev`, never stacked on another branch.
