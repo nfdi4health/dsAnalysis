@@ -20,6 +20,9 @@
 
 initMockData <- function(folder_name = NULL, df = "D", datasources = NULL){
 
+  #### column names used by dplyr/tidyr below (no global variables)
+  Variable <- Mean <- Std <- Entries <- Levels <- NULL
+
   if(is.null(folder_name)){
     folder_name <- "MockData_New"
   }

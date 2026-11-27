@@ -14,13 +14,13 @@ list_dsPackages(search = NULL, status = NULL, refresh = FALSE)
 \item{refresh}{Logical, defaults to FALSE; if TRUE, re-downloads the package catalogue via ds_catalogue() instead of reusing the copy cached earlier in the session.}
 }
 \value{
-A tibble, sorted by package name, with one row per package and columns package, client, status, github_version, source and description; if the catalogue cannot be obtained, an empty tibble is returned invisibly. No disclosure control is relevant since this only reflects publicly available catalogue metadata, and no files are written.
+A tibble, sorted by package name, with one row per package and columns package, client, status, github_version, source and description (github_version is empty for a package the catalogue could not read); if the catalogue cannot be obtained, an empty tibble is returned invisibly, otherwise the tibble is returned visibly. No disclosure control is relevant since this only reflects publicly available catalogue metadata, and no files are written.
 }
 \description{
 Returns a tibble of DataSHIELD packages from the package catalogue, optionally filtered by search text and status.
 }
 \details{
-Calls internal_ds_catalogue() to obtain the catalogue, caching it for the session unless refresh = TRUE forces a reload. Packages that are clients of another package in the catalogue (see internal_catalogue_client()) are merged into that package's row rather than listed separately. Prints a message to the console reporting how many packages were found, with a hint to use install_dsPackage() for the first match, or that none were found.
+Calls internal_ds_catalogue() to obtain the catalogue (a list describing known DataSHIELD packages), caching it for the session unless refresh = TRUE forces a reload. Packages that are clients of another package in the catalogue (see internal_catalogue_client()) are merged into that package's row rather than listed separately, and source information is derived via internal_catalogue_source(). Prints a message to the console reporting how many packages were found, with a hint to use install_dsPackage() for the first match, or that none were found. This function queries a catalogue resource directly and does not dispatch any call to a DataSHIELD server.
 }
 \examples{
 \dontrun{
