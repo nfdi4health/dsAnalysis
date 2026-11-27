@@ -88,3 +88,48 @@ test_that("initProject rejects a non-logical switch_to_proj before the existing-
   testthat::expect_null(err$call)
   testthat::expect_equal(list.files(tmp, all.files = TRUE, no.. = TRUE), "taken")
 })
+
+test_that("initProject rejects a non-logical switch_to_proj = NULL before any folder is created", {
+  tmp <- withr::local_tempdir()
+  err <- testthat::expect_error(dsAnalysis::initProject(path = tmp, name = "my-analysis", switch_to_proj = NULL))
+  testthat::expect_match(err$message, "switch_to_proj has to be logical")
+  testthat::expect_null(err$call)
+  testthat::expect_equal(list.files(tmp, all.files = TRUE, no.. = TRUE), character(0))
+})
+
+test_that("initProject accepts NA as switch_to_proj and reaches the existing-folder check", {
+  tmp <- withr::local_tempdir()
+  dir.create(file.path(tmp, "taken"))
+  err <- testthat::expect_error(dsAnalysis::initProject(path = tmp, name = "taken", switch_to_proj = NA))
+  testthat::expect_match(err$message, "would overwrite an existing")
+  testthat::expect_equal(list.files(file.path(tmp, "taken")), character(0))
+})
+
+test_that("initProject expands a path starting with ~ to the home directory in the overwrite message", {
+  home <- local_home()
+  dir.create(file.path(home, "projects", "taken"), recursive = TRUE)
+  err <- testthat::expect_error(dsAnalysis::initProject(path = "~/projects", name = "taken"))
+  testthat::expect_match(err$message, "would overwrite an existing")
+  testthat::expect_match(err$message, paste0(fs::path_expand("~/projects"), "/taken"), fixed = TRUE)
+  testthat::expect_equal(list.files(file.path(home, "projects", "taken")), character(0))
+})
+
+test_that("initProject with a missing path and a declined confirmation leaves the home directory empty", {
+  home <- local_home()
+  testthat::local_mocked_bindings(internal_confirm = function(question) FALSE)
+  err <- testthat::expect_error(dsAnalysis::initProject(name = "my-analysis", switch_to_proj = TRUE))
+  testthat::expect_match(err$message, "No project created")
+  testthat::expect_null(err$call)
+  testthat::expect_equal(list.files(home, all.files = TRUE, no.. = TRUE), character(0))
+})
+
+test_that("initProject checks the name before the confirmation question when no path is given", {
+  asked <- 0L
+  testthat::local_mocked_bindings(internal_confirm = function(question){
+    asked <<- asked + 1L
+    TRUE
+  })
+  err <- testthat::expect_error(dsAnalysis::initProject())
+  testthat::expect_match(err$message, "provide a path name for the project")
+  testthat::expect_equal(asked, 0L)
+})
