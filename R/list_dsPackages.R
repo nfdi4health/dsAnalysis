@@ -25,8 +25,10 @@ list_dsPackages <- function(search = NULL, status = NULL, refresh = FALSE){
   clients <- vapply(names(catalogue), internal_catalogue_client, "", catalogue = catalogue)
   packages <- setdiff(names(catalogue), stats::na.omit(clients))
 
+  # `repo` is the string "Error" where the catalogue couldn't read a package
   field <- function(entry, part, name){
-    value <- entry[[part]][[name]]
+    section <- entry[[part]]
+    value <- if (is.list(section)) section[[name]] else NULL
     if (is.null(value)) "" else as.character(value)
   }
 

@@ -87,3 +87,18 @@ test_that("list_dsPackages passes refresh through to internal_ds_catalogue", {
   testthat::expect_true(seen)
   testthat::expect_equal(nrow(res), 0L)
 })
+
+test_that("list_dsPackages lists a package the catalogue couldn't read (repo \"Error\") without a version", {
+  fake_catalogue <- list(
+    dsA = list(input = list(status = "production", description = "a"), repo = list(Version = "1.2.0")),
+    dsB = list(input = list(status = "development", description = "b"), repo = "Error")
+  )
+  testthat::local_mocked_bindings(
+    internal_ds_catalogue = function(refresh = FALSE) fake_catalogue,
+    internal_catalogue_client = function(name, catalogue) NA_character_,
+    internal_catalogue_source = function(entry) list(cran = FALSE, repo = NA_character_)
+  )
+  testthat::expect_message(res <- dsAnalysis::list_dsPackages(), "2 DataSHIELD package")
+  testthat::expect_equal(res$package, c("dsA", "dsB"))
+  testthat::expect_equal(res$github_version, c("1.2.0", ""))
+})
