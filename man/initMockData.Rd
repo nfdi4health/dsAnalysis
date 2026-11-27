@@ -2,27 +2,25 @@
 % Please edit documentation in R/initMockData.R
 \name{initMockData}
 \alias{initMockData}
-\title{Function to get mock data from connected data sources}
+\title{Generate and save synthetic mock data from server variables}
 \usage{
 initMockData(folder_name = NULL, df = "D", datasources = NULL)
 }
 \arguments{
-\item{folder_name}{folder where the mock data shall be stored}
+\item{folder_name}{Optional string naming the subfolder under utils/mock_data to create for storing the mock data; defaults to "MockData_New" if NULL, and the function errors if the resulting folder already exists.}
 
-\item{df}{data.frame object on the server-side to produce mock data from}
+\item{df}{String giving the name of the data frame on the server-side to produce mock data from (not a local data.frame object); defaults to "D".}
 
-\item{datasources}{a list of \code{\link[DSI]{DSConnection-class}} objects obtained after login.
-If the \code{datasources} argument is not specified the default set of connections will be
-used: see \code{\link[DSI]{datashield.connections_default}}.}
+\item{datasources}{A list of DSI::DSConnection-class objects obtained after login; if NULL (the default), the connections found by DSI::datashield.connections_find() are used.}
 }
 \value{
-mock data in the utils/mock_data folder
+Invisibly returns the path (a string) to the newly created folder containing one .rda file per data source; the mock data frames themselves are saved to disk as a side effect rather than returned in R.
 }
 \description{
-The function will create a new DataSHIELD analysis project environment
+Builds simulated local datasets that mimic the statistical properties of a server-side data frame, then saves one .rda file per data source to a new local folder.
 }
 \details{
-This function adaptssome things.
+The function queries each server for variable missingness, class, and summary statistics (via dsSupportClient::ds.wrapper() calls to ds.numNA and ds.class, plus ds.summaryVars()) and for categorical variable levels (ds.levels()), then simulates continuous variables from rnorm() using the reported means and standard deviations and resamples categorical levels locally with sample(). No raw server-side data is transferred; only aggregate statistics are used to build the mock data, which is saved to disk with save().
 }
 \author{
 Florian Schwarz for the German Institute of Human Nutrition

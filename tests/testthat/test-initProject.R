@@ -15,8 +15,7 @@ test_that("initProject without a path stops outside an interactive session and c
 })
 
 test_that("initProject without a path asks before using the home directory", {
-  home <- withr::local_tempdir()
-  withr::local_envvar(HOME = home, R_USER = home)
+  home <- local_home()
   asked <- NULL
   testthat::local_mocked_bindings(internal_confirm = function(question){
     asked <<- question
@@ -52,8 +51,7 @@ test_that("initProject checks name before path, so a missing name errors even wi
 })
 
 test_that("initProject rejects a non-logical switch_to_proj after a confirmed home directory and creates nothing", {
-  home <- withr::local_tempdir()
-  withr::local_envvar(HOME = home, R_USER = home)
+  home <- local_home()
   testthat::local_mocked_bindings(internal_confirm = function(question) TRUE)
   err <- testthat::expect_error(dsAnalysis::initProject(name = "my-analysis", switch_to_proj = "yes"))
   testthat::expect_match(err$message, "switch_to_proj has to be logical")
@@ -62,8 +60,7 @@ test_that("initProject rejects a non-logical switch_to_proj after a confirmed ho
 })
 
 test_that("initProject treats path = 'home' like the home directory when checking for an existing folder", {
-  home <- withr::local_tempdir()
-  withr::local_envvar(HOME = home, R_USER = home)
+  home <- local_home()
   dir.create(file.path(home, "taken"))
   err <- testthat::expect_error(dsAnalysis::initProject(path = "home", name = "taken"))
   testthat::expect_match(err$message, "would overwrite an existing")

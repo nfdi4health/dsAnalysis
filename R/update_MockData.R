@@ -16,6 +16,9 @@
 
 update_MockData <- function(folder_name = NULL, table_names = NULL){
 
+  #### column names used by dplyr/tidyr below (no global variables)
+  Code <- Code_1 <- Code_5 <- server <- NULL
+
 
 
   if(is.null(folder_name)){

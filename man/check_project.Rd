@@ -20,6 +20,15 @@ Uses here::here() to locate the project and an internal helper (built on renv::s
 }
 \examples{
 \dontrun{
-proj <- tempfile(\"demo_project\")\ndir.create(proj)\nold <- setwd(proj)\n\n# check_project() looks up the project with here::here(); without an\n# renv.lock file it simply reports that there is nothing to check\ncheck_project(fix = \"none\")\n\nsetwd(old)\nunlink(proj, recursive = TRUE)
+proj <- tempfile("demo_project")
+dir.create(proj)
+old <- setwd(proj)
+
+# check_project() looks up the project with here::here(); without an
+# renv.lock file it simply reports that there is nothing to check
+check_project(fix = "none")
+
+setwd(old)
+unlink(proj, recursive = TRUE)
 }
 }
