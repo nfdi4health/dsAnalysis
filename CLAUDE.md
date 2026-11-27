@@ -318,5 +318,9 @@ Facts behind these items:
       network tests (opal-demo) only with `skip_on_cran()`,
       `skip_if_offline()` and an opt-in environment variable, never failing
       when the demo server is down or changed.
+    - ~~CRAN's platforms in CI~~ (set up 2026-11-27, not yet green):
+      `cran-check.yml` (weekly and by hand) and the release check in
+      `release-trigger.yml` run `as-cran` on ubuntu, macOS and windows with
+      R release and devel; pull requests into `dev` keep the ubuntu check.
     - Blocker: `dsSupportClient` must be on CRAN first (Imports can't come
       from GitHub), or the few functions used moved to Suggests.
