@@ -244,3 +244,35 @@ test_that("initMockData writes mock data for two servers whose row counts match 
   testthat::expect_equal(nrow(mock$sim3), nrow(cnsim$real$sim3))
   testthat::expect_false(nrow(mock$sim1) == nrow(mock$sim3))
 })
+
+test_that("initMockData leaves no object named after a server in the global environment", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  
+  testthat::expect_false(exists("sim1", envir = globalenv(), inherits = FALSE))
+  mock_path <- dsAnalysis::initMockData(folder_name = "mock-globalenv", df = "D", datasources = cnsim$conns)
+  testthat::expect_setequal(basename(fs::dir_ls(mock_path)), c("sim1.rda", "sim2.rda", "sim3.rda"))
+  for (server in c("sim1", "sim2", "sim3")){
+    testthat::expect_false(exists(server, envir = globalenv(), inherits = FALSE))
+  }
+})
+
+test_that("initMockData writes mock data whose numeric standard deviations are close to the server's standard deviations", {
+  testthat::skip_if_not_installed("DSLite")
+  testthat::skip_if_not_installed("dsBase")
+  cnsim <- local_cnsim_project()
+  
+  mock_path <- dsAnalysis::initMockData(folder_name = "mock-sd", df = "D", datasources = cnsim$conns)
+  mock <- new.env()
+  load(file.path(mock_path, "sim2.rda"), envir = mock)
+  real <- cnsim$real$sim2
+  
+  numeric_vars <- setdiff(colnames(real)[vapply(real, is.numeric, TRUE)], "ID")
+  testthat::expect_true(length(numeric_vars) > 0)
+  for (v in numeric_vars){
+    real_sd <- stats::sd(real[[v]], na.rm = TRUE)
+    mock_sd <- stats::sd(mock$sim2[[v]], na.rm = TRUE)
+    testthat::expect_lt(abs(mock_sd - real_sd), 0.5 * real_sd)
+  }
+})
