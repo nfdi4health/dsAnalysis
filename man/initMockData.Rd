@@ -14,13 +14,13 @@ initMockData(folder_name = NULL, df = "D", datasources = NULL)
 \item{datasources}{A list of DSI::DSConnection-class objects obtained after login; if NULL (the default), the connections found by DSI::datashield.connections_find() are used.}
 }
 \value{
-Invisibly returns the path (a string) to the newly created folder containing one .rda file per data source; the mock data frames themselves are saved to disk as a side effect rather than returned in R.
+Invisibly returns the path (a string) to the newly created local folder; as a side effect, one .rda file per data source is written into that folder, each named after its data source and containing a single data.frame object of the same name with simulated data (no row-level server data is returned to R).
 }
 \description{
 Builds simulated local datasets that mimic the statistical properties of a server-side data frame, then saves one .rda file per data source to a new local folder.
 }
 \details{
-The function queries each server for variable missingness, class, and summary statistics (via dsSupportClient::ds.wrapper() calls to ds.numNA and ds.class, plus ds.summaryVars()) and for categorical variable levels (ds.levels()), then simulates continuous variables from rnorm() using the reported means and standard deviations and resamples categorical levels locally with sample(). No raw server-side data is transferred; only aggregate statistics are used to build the mock data, which is saved to disk with save().
+The function queries each server for variable missingness and class via dsSupportClient::ds.wrapper() calls to ds.numNA and ds.class, summary statistics via ds.summaryVars(), and categorical variable levels via ds.levels() called directly (not through ds.wrapper). Continuous variables are simulated locally from rnorm() using the reported per-server means and standard deviations, negative values are clipped to zero unless the original variable could be negative, and categorical levels are replicated and resampled locally with sample() to match each server's record count. Missing values are reintroduced per variable using the reported missingness counts via replace()/sample(), and the resulting data.frame for each data source is saved to disk with save(); no row-level server-side data is ever transferred.
 }
 \author{
 Florian Schwarz for the German Institute of Human Nutrition
