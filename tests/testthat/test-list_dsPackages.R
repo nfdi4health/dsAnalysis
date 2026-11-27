@@ -100,5 +100,5 @@ test_that("list_dsPackages lists a package the catalogue couldn't read (repo \"E
   )
   testthat::expect_message(res <- dsAnalysis::list_dsPackages(), "2 DataSHIELD package")
   testthat::expect_equal(res$package, c("dsA", "dsB"))
-  testthat::expect_equal(res$github_version, c("1.2.0", ""))
+  testthat::expect_equal(unname(res$github_version), c("1.2.0", ""))
 })
