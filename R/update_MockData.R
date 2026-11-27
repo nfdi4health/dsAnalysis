@@ -1,18 +1,16 @@
-#'
 #' @title Function to update the 01_DSLite_Setup.R file
-#' @description XXX
-#' @details XXX.
-#' @return adjusted R Script
+#' @description Rewrites the utils/setup/01_DSLite_Setup.R script so it loads a given folder of mock data files and configures a DSLite server and login data for them. If table names are not supplied, they are parsed from the existing 01_DS_Login.R file.
+#' @details Reads the mock data file names from utils/mock_data/folder_name and the existing utils/setup/01_DSLite_Setup.R, then reconstructs the file's "Step 2" (data loading), "Step 3" (DSLite::newDSLiteServer table list) and "Step 5" (logindata.dslite.data) blocks to match the mock data, writing the result back with writeLines(). This function operates purely on local files and does not dispatch any call to a DataSHIELD server; it uses dplyr/tidyr (unnest_wider, mutate, select) and stringr helpers to parse code lines when table_names is not supplied.
+#' @param folder_name Character string naming the subfolder of utils/mock_data/ (relative to the project root, resolved via here::here()) that contains the .rda mock data files to load; required, no default.
+#' @param table_names Optional character vector of table names to assign to each mock data file, in the order returned by list.files(); its length must equal the number of mock data files, and if omitted the table/server names are instead parsed from utils/setup/01_DS_Login.R.
+#' @return Returns NULL invisibly; the function's effect is the side effect of overwriting utils/setup/01_DSLite_Setup.R with updated code blocks on disk.
 #' @author Florian Schwarz for the German Institute of Human Nutrition
-#' @param folder_name the folder where the mock data is stored
-#' @param table_names optional - given new table names
 #' @import dplyr
 #' @import tidyr
 #' @import tibble
 #' @import here
 #' @import stringr
 #' @export
-#'
 
 update_MockData <- function(folder_name = NULL, table_names = NULL){
 

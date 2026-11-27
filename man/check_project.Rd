@@ -7,7 +7,7 @@
 check_project(fix = NULL)
 }
 \arguments{
-\item{fix}{Character string, one of "restore" or "snapshot", or NULL (the default); if NULL and the session is interactive, the user is asked to choose via a menu, while in a non-interactive session with fix left NULL no restore or snapshot action is taken and any other value is silently ignored.}
+\item{fix}{Character string, either "restore" (calls renv::restore()) or "snapshot" (calls renv::snapshot()); if NULL (the default) and the session is interactive, the user is asked to choose via a menu, in a non-interactive session with fix left NULL no action is taken, and any other value (including "none") is silently ignored and treated as no fix.}
 }
 \value{
 Invisibly returns the comparison list produced by the internal helper (with elements such as synchronized, used_not_installed, recorded_not_installed, used_not_recorded, other_version, and unexplained), or invisible NULL if the project has no renv.lock file; the function is called mainly for its console messages and the side effects of fix (changes to the installed packages or to renv.lock on disk) rather than for its return value.
