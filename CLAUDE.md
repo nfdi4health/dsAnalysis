@@ -321,6 +321,8 @@ Facts behind these items:
     - ~~CRAN's platforms in CI~~ (set up 2026-11-27, not yet green):
       `R-CMD-check.yaml` (pull requests into `dev`, weekly, by hand) and the
       release check in `release-trigger.yml` run `as-cran` on ubuntu, macOS
-      and windows with R release and devel.
+      and windows with R release and devel (macOS with R-devel left out:
+      no binaries there). `cran-incoming: false` in both until
+      dsSupportClient is on CRAN, then switch it back on.
     - Blocker: `dsSupportClient` must be on CRAN first (Imports can't come
       from GitHub), or the few functions used moved to Suggests.
