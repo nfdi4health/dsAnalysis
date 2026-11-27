@@ -4,7 +4,7 @@
 #' @param search Optional character string to search for (case-insensitive, fixed match) in the package name, client name and description; if NULL (the default), no text filtering is applied.
 #' @param status Optional character vector of statuses to keep, e.g. "production" or c("production", "development"); matching is case-insensitive and packages with no recorded status are labelled "unknown"; if NULL (the default), all statuses are kept.
 #' @param refresh Logical, defaults to FALSE; if TRUE, re-downloads the package catalogue via ds_catalogue() instead of reusing the copy cached earlier in the session.
-#' @return A tibble, sorted by package name, with one row per package and columns package, client, status, github_version, source and description; if the catalogue cannot be obtained, an empty tibble is returned invisibly. No disclosure control is relevant since this only reflects publicly available catalogue metadata, and no files are written.
+#' @return A tibble, sorted by package name, with one row per package and columns package, client, status, github_version, source and description (github_version is empty for a package the catalogue could not read); if the catalogue cannot be obtained, an empty tibble is returned invisibly. No disclosure control is relevant since this only reflects publicly available catalogue metadata, and no files are written.
 #' @examples
 #' \dontrun{
 #' list_dsPackages()
