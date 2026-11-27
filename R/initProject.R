@@ -188,8 +188,8 @@ initProject <- function(path,
 
   used <- unique(renv::dependencies(new_project_path, quiet = TRUE)$Package)
 
-  base_pkgs      <- rownames(installed.packages(priority = "base"))
-  already_there  <- rownames(installed.packages(lib.loc = project_library))
+  base_pkgs      <- rownames(utils::installed.packages(priority = "base"))
+  already_there  <- rownames(utils::installed.packages(lib.loc = project_library))
   used           <- setdiff(used, c(base_pkgs, already_there))
 
   if (length(used) > 0) {
@@ -205,14 +205,14 @@ initProject <- function(path,
                 packages = c("dsBaseClient", "dsSupportClient", "dsAnalysis"),
                 prompt = FALSE)
 
-  ip <- installed.packages(lib.loc = project_library)
+  ip <- utils::installed.packages(lib.loc = project_library)
 
   deps <- unique(unlist(
     tools::package_dependencies(rownames(ip), db = ip,
                                 which = c("Depends", "Imports", "LinkingTo"))
   ))
 
-  known   <- c(rownames(ip), rownames(installed.packages(priority = "base")), "R")
+  known   <- c(rownames(ip), rownames(utils::installed.packages(priority = "base")), "R")
   missing <- setdiff(deps, known)
 
   if (length(missing) > 0) {

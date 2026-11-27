@@ -1,5 +1,5 @@
 Package: dsAnalysis
-Title: Creates DataSHIELD analysis project environments
+Title: Creates DataSHIELD Analysis Project Environments
 Version: 0.0.0.9010
 Authors@R: 
     person("Florian", "Schwarz", , "Florian.Schwarz@dife.de", role = c("aut", "cre"))
@@ -19,7 +19,6 @@ Imports:
     here,
     jsonlite,
     stringr,
-    remotes,
     DSI,
     DSOpal,
     dsBaseClient,
