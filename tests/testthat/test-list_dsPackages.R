@@ -102,3 +102,111 @@ test_that("list_dsPackages lists a package the catalogue couldn't read (repo \"E
   testthat::expect_equal(res$package, c("dsA", "dsB"))
   testthat::expect_equal(unname(res$github_version), c("1.2.0", ""))
 })
+
+test_that("list_dsPackages drops client packages from the listing and fills the client column for their parent package", {
+  fake_catalogue <- list(
+    dsBase = list(input = list(status = "production", description = "base", client = "dsBaseClient"), repo = list(Version = "6.3.0")),
+    dsBaseClient = list(input = list(status = "production", description = "base client"), repo = list(Version = "6.3.0")),
+    dsSurvival = list(input = list(status = "development", description = "survival"), repo = list(Version = "1.0"))
+  )
+  testthat::local_mocked_bindings(
+    internal_ds_catalogue = function(refresh = FALSE) fake_catalogue,
+    internal_catalogue_client = function(name, catalogue) {
+      cl <- catalogue[[name]]$input$client
+      if (is.null(cl)) NA_character_ else cl
+    },
+    internal_catalogue_source = function(entry) list(cran = FALSE, repo = NA_character_)
+  )
+  testthat::expect_message(res <- dsAnalysis::list_dsPackages(), "2 DataSHIELD package")
+  testthat::expect_equal(res$package, c("dsBase", "dsSurvival"))
+  testthat::expect_equal(unname(res$client), c("dsBaseClient", ""))
+})
+
+test_that("list_dsPackages labels a package without a recorded status as 'unknown' and keeps it when that status is requested", {
+  fake_catalogue <- list(
+    dsA = list(input = list(description = "no status here"), repo = list(Version = "1")),
+    dsB = list(input = list(status = "production", description = "b"), repo = list(Version = "2"))
+  )
+  testthat::local_mocked_bindings(
+    internal_ds_catalogue = function(refresh = FALSE) fake_catalogue,
+    internal_catalogue_client = function(name, catalogue) NA_character_,
+    internal_catalogue_source = function(entry) list(cran = FALSE, repo = NA_character_)
+  )
+  testthat::expect_message(all_pkgs <- dsAnalysis::list_dsPackages(), "2 DataSHIELD package")
+  testthat::expect_equal(unname(all_pkgs$status), c("unknown", "production"))
+  testthat::expect_message(only_unknown <- dsAnalysis::list_dsPackages(status = "UNKNOWN"), "1 DataSHIELD package")
+  testthat::expect_equal(only_unknown$package, "dsA")
+})
+
+test_that("list_dsPackages reports CRAN, GitHub repo or empty string in the source column", {
+  fake_catalogue <- list(
+    dsCran = list(input = list(status = "production", description = "on cran"), repo = list(Version = "1")),
+    dsGit = list(input = list(status = "production", description = "on github"), repo = list(Version = "2")),
+    dsNone = list(input = list(status = "production", description = "nowhere"), repo = list(Version = "3"))
+  )
+  testthat::local_mocked_bindings(
+    internal_ds_catalogue = function(refresh = FALSE) fake_catalogue,
+    internal_catalogue_client = function(name, catalogue) NA_character_,
+    internal_catalogue_source = function(entry) {
+      if (identical(entry$input$description, "on cran")) list(cran = TRUE, repo = NA_character_)
+      else if (identical(entry$input$description, "on github")) list(cran = FALSE, repo = "datashield/dsGit")
+      else list(cran = FALSE, repo = NA_character_)
+    }
+  )
+  testthat::expect_message(res <- dsAnalysis::list_dsPackages(), "3 DataSHIELD package")
+  testthat::expect_equal(res$package, c("dsCran", "dsGit", "dsNone"))
+  testthat::expect_equal(unname(res$source), c("CRAN", "GitHub: datashield/dsGit", ""))
+})
+
+test_that("list_dsPackages applies status and search filters together", {
+  fake_catalogue <- list(
+    dsOmics = list(input = list(status = "production", description = "omics tools"), repo = list(Version = "1")),
+    dsOmicsDev = list(input = list(status = "development", description = "omics tools in progress"), repo = list(Version = "2")),
+    dsSurvival = list(input = list(status = "production", description = "cox models"), repo = list(Version = "3"))
+  )
+  testthat::local_mocked_bindings(
+    internal_ds_catalogue = function(refresh = FALSE) fake_catalogue,
+    internal_catalogue_client = function(name, catalogue) NA_character_,
+    internal_catalogue_source = function(entry) list(cran = FALSE, repo = NA_character_)
+  )
+  testthat::expect_message(res <- dsAnalysis::list_dsPackages(search = "omics", status = "production"), "1 DataSHIELD package")
+  testthat::expect_equal(res$package, "dsOmics")
+  testthat::expect_equal(nrow(res), 1L)
+})
+
+test_that("list_dsPackages returns one visible row per package with all six character columns filled from the catalogue", {
+  fake_catalogue <- list(
+    dsA = list(input = list(status = "production", description = "package A", client = "dsAClient"), repo = list(Version = "1.2.3")),
+    dsAClient = list(input = list(status = "production", description = "client of A"), repo = list(Version = "1.2.3"))
+  )
+  testthat::local_mocked_bindings(
+    internal_ds_catalogue = function(refresh = FALSE) fake_catalogue,
+    internal_catalogue_client = function(name, catalogue) {
+      cl <- catalogue[[name]]$input$client
+      if (is.null(cl)) NA_character_ else cl
+    },
+    internal_catalogue_source = function(entry) list(cran = TRUE, repo = NA_character_)
+  )
+  testthat::expect_message(out <- withVisible(dsAnalysis::list_dsPackages()), "1 DataSHIELD package")
+  testthat::expect_true(out$visible)
+  res <- out$value
+  testthat::expect_s3_class(res, "tbl_df")
+  testthat::expect_equal(dim(res), c(1L, 6L))
+  testthat::expect_true(all(vapply(res, is.character, logical(1))))
+  testthat::expect_equal(unname(unlist(res[1, ])),
+                         c("dsA", "dsAClient", "production", "1.2.3", "CRAN", "package A"))
+})
+
+test_that("list_dsPackages treats the search string as a fixed, not regular expression, match", {
+  fake_catalogue <- list(
+    dsA = list(input = list(status = "production", description = "uses d.s notation"), repo = list(Version = "1")),
+    dsB = list(input = list(status = "production", description = "plain text"), repo = list(Version = "2"))
+  )
+  testthat::local_mocked_bindings(
+    internal_ds_catalogue = function(refresh = FALSE) fake_catalogue,
+    internal_catalogue_client = function(name, catalogue) NA_character_,
+    internal_catalogue_source = function(entry) list(cran = FALSE, repo = NA_character_)
+  )
+  testthat::expect_message(res <- dsAnalysis::list_dsPackages(search = "d.s"), "1 DataSHIELD package")
+  testthat::expect_equal(res$package, "dsA")
+})
