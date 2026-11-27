@@ -14,13 +14,13 @@ list_dsPackages(search = NULL, status = NULL, refresh = FALSE)
 \item{refresh}{Logical, defaults to FALSE; if TRUE, re-downloads the package catalogue via ds_catalogue() instead of reusing the copy cached earlier in the session.}
 }
 \value{
-A tibble, sorted by package name, with one row per package and columns package, client, status, github_version, source and description; if the catalogue cannot be obtained, an empty tibble is returned invisibly. No disclosure control is relevant since this only reflects publicly available catalogue metadata, and no files are written.
+A tibble, sorted by package name, with one row per package and columns package, client, status, github_version, source and description, describing packages in the catalogue (not any server-side data); if the catalogue cannot be obtained this is an empty tibble returned invisibly, otherwise it is returned visibly. No disclosure control is relevant since this only reflects publicly available catalogue metadata, and no files are written.
 }
 \description{
 Returns a tibble of DataSHIELD packages from the package catalogue, optionally filtered by search text and status.
 }
 \details{
-Calls internal_ds_catalogue() to obtain the catalogue, caching it for the session unless refresh = TRUE forces a reload. Packages that are clients of another package in the catalogue (see internal_catalogue_client()) are merged into that package's row rather than listed separately. Prints a message to the console reporting how many packages were found, with a hint to use install_dsPackage() for the first match, or that none were found.
+Calls internal_ds_catalogue() to obtain the catalogue (caching it for the session unless refresh = TRUE forces a reload via ds_catalogue()), then performs all filtering, merging and formatting locally in R. Packages that are clients of another package in the catalogue (see internal_catalogue_client()) are merged into that package's row rather than listed separately. This function does not contact a DataSHIELD server backend (no DSI::datashield.assign()/aggregate() call); it only reads and reshapes catalogue metadata and prints a message to the console reporting how many packages were found, with a hint to use install_dsPackage() for the first match, or that none were found.
 }
 \examples{
 \dontrun{
